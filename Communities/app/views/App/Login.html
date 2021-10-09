@@ -1,0 +1,22 @@
+{{set . "title" "Login - Communities"}}
+{{template "header.html" .}}
+
+<header class="jumbotron" style="background-color:#ffffff">
+  <div class="container">
+    <div class="row">
+      <h1>Welcome to Communities!</h1>
+      <p></p>
+    </div>
+  </div>
+</header>
+
+<form action="/" method="GET">
+  <input type="text" name="LoginUserName"/><br/>
+  <input type="text" name="LoginPassword"><br/>
+  <input type="submit" value="Login" />
+</form>
+
+<form action="/AccountCreation" method="GET">
+  <input type="submit" value="Create an Account" />
+</form>
+{{template "footer.html" .}}
