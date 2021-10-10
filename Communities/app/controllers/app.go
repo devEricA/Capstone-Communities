@@ -30,3 +30,11 @@ func (c App) Login() revel.Result {
 func (c App) AccountCreation() revel.Result {
 	return c.Render()
 }
+
+func (c App) AccRecovery() revel.Result {
+	return c.Render()
+}
+
+func (c App) Profile(LoginUserName string, LoginPassword string) revel.Result {
+	return c.Render(LoginUserName, LoginPassword)
+}
