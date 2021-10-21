@@ -1,6 +1,15 @@
 {{set . "title" "Account Creation - Communities"}}
 <!-- {{template "header.html" .}} -->
 
+<style>
+    .accountRecoveryEmail{
+        text-align: left;
+        height: 20 px;
+        padding-bottom: 10 px;
+        border: 1px solid black; 
+    }
+</style>
+
 <header class="jumbotron" style="background-color:#f1ce6c">
     <div class="container">
         <div class="row">
@@ -10,6 +19,11 @@
         </div>
     </div>
 </header> 
+
+<form method = "POST">
+    Enter the email address that you used in order to create an account :: 
+    <input type="text" name="LoginUserName"/><br/>
+</form>
 
 <form action="/login" method="GET">
     <input type="submit" value="Go back" />

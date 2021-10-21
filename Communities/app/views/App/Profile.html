@@ -1,6 +1,39 @@
 {{set . "title" "Account Creation - Communities"}}
 <!-- {{template "header.html" .}} -->
 
+<style>
+    .profilePicture{
+        text-align: left;
+        height: 20 px;
+        padding-bottom: 10 px;
+    }
+</style>
+
+
+<style>
+    .UsernameAndPassword{
+        text-align: left;
+        height: 500 px;
+        padding-bottom: 10 px;
+    }
+</style>
+
+<style>
+    .userCommunities{
+        text-align: left;
+        height: 300 px;
+        padding-bottom: 10 px;
+    }
+</style>
+
+<style>
+    .userPosts{
+        text-align: left;
+        height: 200 px;
+        padding-bottom: 10 px;
+    }
+</style>
+
 <header class="jumbotron" style="background-color:#f1ce6c">
     <div class="container">
         <div class="row">
@@ -9,6 +42,31 @@
         </div>
     </div>
 </header> 
+
+<div class = "profilePicture"> 
+    Profile Picture: 
+</text>
+
+<div class = "UsernameAndPassword">
+Current Username: {{.LoginUserName}} 
+    <form method = "POST">
+        <input type="text" name="LoginUserName" placeholder="Change Username"/><br/>
+    </form>
+
+    <!-- TODO: Needs to be obfuscated-->
+    <text> Current Password: {{.LoginPassword}} </text>
+    <form method = "POST">
+        <input type="text" name="LoginPassword" placeholder = "Change Password"><br/>
+    </form>
+</div>
+
+<div class = "userCommunities">
+    My Communities
+</div>
+
+<div class = "userPosts">
+    My Posts
+</div>
 
 <form action="/" method="GET">
     <input type="submit" value="Go back" />

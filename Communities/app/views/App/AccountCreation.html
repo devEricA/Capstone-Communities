@@ -1,6 +1,14 @@
 {{set . "title" "Account Creation - Communities"}}
 <!-- {{template "header.html" .}} -->
 
+<style>
+    .accountCreation{
+        text-align: left;
+        height: 20%;
+        padding-bottom: 10 px;
+    }
+</style>
+
 <header class="jumbotron" style="background-color:#f1ce6c">
     <div class="container">
         <div class="row">
@@ -10,6 +18,18 @@
         </div>
     </div>
 </header> 
+
+<div class = "accountCreation">
+    Enter your Email address
+    <input type="text" name="LoginEmailAddress"/><br/>
+    Enter a Username
+    <input type="text" name="LoginUserName"/><br/>
+    Enter a Password
+    <input type="password" name="LoginPassword"/><br/>
+    Confirm your Password
+    <input type="password" name="LoginPasswordConfirmation"/><br/>
+    <input type="submit" value="Create an Account"/>
+</div>
 
 <form action="/login" method="GET">
     <input type="submit" value="Go back" />
