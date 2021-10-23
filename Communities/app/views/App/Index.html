@@ -9,38 +9,39 @@
   }
   .communitypages{
     padding-left: 10px;
-    width: 200px;
-    height: 80%;
+    width: 24%;
+    height: 95%;
     border: 10px solid black;
+    left: 1%;
+  }
+  .communities{
+    padding-right:10px;
+    width: 22%;
+    height: 88%;
+    border: 10px solid black;
+    position: absolute;
+    top: 7%;
+    right: 1%;
   }
   .profileWindow{
     padding-right: 10px;
-    width: 200px;
-    height: 50px;
+    width: 22%;
+    height: 5%;
     border: 10px solid black;
     position: absolute;
-    top: 0px;
-    right: 0;
+    top: 1%;
+    right: 1%;
   }
   
 </style>
 
-<!-- <header class="jumbotron" style="background-color:#A9F16C">
-  <div class="container">
-    <div class="row">
-      <h1>It works!</h1>
-      <p></p>
-    </div>
-  </div>
-</header> -->
-
 <div class = "map">
-  Map goes here  
+  <img src="/public/img/my-map.png" height = 100%> 
 </div>
 
 <div class="container">
   <div class="communitypages">
-    Community pages will be displayed here
+    Latest news from {{.LoginUserName}}'s communities
   </div>
 </div>
 
@@ -50,6 +51,9 @@
       <form action="/Profile" method="GET">
         <input type="submit" value="My Profile" />
       </form>
+  </div>
+  <div class = "communities">
+    My Communities
   </div>
 </div>
 
