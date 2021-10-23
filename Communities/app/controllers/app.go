@@ -49,7 +49,7 @@ func (c App) Profile(LoginUserName string, LoginPassword string) revel.Result {
 	return c.Render(LoginUserName, LoginPassword)
 }
 
-func (c App) Map()revel.Result{
+func (c App) CreateCommunity() revel.Result{
 	return c.Render()
 }
 

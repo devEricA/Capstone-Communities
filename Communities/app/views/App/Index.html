@@ -17,16 +17,16 @@
   .communities{
     padding-right:10px;
     width: 22%;
-    height: 88%;
+    height: 83%;
     border: 10px solid black;
     position: absolute;
-    top: 7%;
+    top: 13%;
     right: 1%;
   }
   .profileWindow{
     padding-right: 10px;
     width: 22%;
-    height: 5%;
+    height: 10%;
     border: 10px solid black;
     position: absolute;
     top: 1%;
@@ -50,6 +50,9 @@
       Hello {{.LoginUserName}}
       <form action="/Profile" method="GET">
         <input type="submit" value="My Profile" />
+      </form>
+      <form action="/CreateCommunity" method="GET" right="1%" position = "">
+        <input type="submit" value="Create New Community" />
       </form>
   </div>
   <div class = "communities">
