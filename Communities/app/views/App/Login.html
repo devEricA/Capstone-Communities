@@ -1,29 +1,57 @@
 {{set . "title" "Login - Communities"}}
 {{template "header.html" .}}
 
-<header class="jumbotron" style="background-color:#ffffff">
-  <div class="container">
-    <div class="row">
-      <center><h1>Welcome to Communities!</h1></center>
-      <p></p>
-    </div>
-  </div>
-</header>
-
-<center>
-  <form action="/" method="GET">
-    <input type="text" name="LoginUserName" placeholder="Username"/><br/>
-    <input type="password" name="LoginPassword" placeholder="Password"><br/>
-    <input type="submit" value="Login" />
-  </form>
-
-
-  <form action="/AccRecovery" method="GET"> 
-    <input type="submit" value="Forgot Password?" />
-  </form>
-
-  <form action="/AccountCreation" method="GET">
-    <input type="submit" value="Create an Account" />
-  </form>
-</center>
+<head>  
+  <meta name="viewport" content="width=device-width, initial-scale=1">  
+  <style>   
+  Body {  
+    font-family: Calibri, Helvetica, sans-serif;  
+    background-color: rgb(255, 255, 255);  
+  }  
+  button {   
+         background-color: #000000;   
+         width: 100%;  
+          color: rgb(184, 182, 179);   
+          padding: 15px;   
+          margin: 10px 0px;   
+          border: none;   
+          cursor: pointer;   
+        }   
+   form {   
+          border: 3px solid #f1f1f1;   
+      }   
+   input[type=text], input[type=password] {   
+          width: 100%;   
+          margin: 8px 0;  
+          padding: 12px 20px;   
+          display: inline-block;   
+          border: 2px solid rgb(0, 0, 0);   
+          box-sizing: border-box;   
+      }  
+   button:hover {   
+          opacity: 0.7;   
+      }   
+          
+       
+   .container {   
+          padding: 25px;   
+          background-color: rgb(255, 255, 255);  
+      }   
+  </style>   
+  </head>    
+  <body>    
+      <center> <h1> Welcome to Communities! </h1> </center>   
+      <form action = "/" method = "">  
+          <div class="container">   
+              <label>Username</label><br>   
+              <input type="text" placeholder="Enter Username" name="LoginUserName" required><br>
+              <label>Password</label><br>
+              <input type="password" placeholder="Enter Password" name="LoginPassword" required><br>
+              <button type="submit">Login</button><br>
+              <input type="checkbox" checked="checked"> Remember me  <br> 
+              Forgot <a href="/AccRecovery"> password? </a><br>
+              Create an <a href="/AccountCreation"> account. </a>
+          </div>   
+      </form>     
+  </body>     
 {{template "footer.html" .}}

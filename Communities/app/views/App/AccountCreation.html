@@ -1,12 +1,32 @@
 {{set . "title" "Account Creation - Communities"}}
-<!-- {{template "header.html" .}} -->
+{{template "header.html" .}}
 
 <style>
-    .accountCreation{
-        text-align: left;
-        height: 20%;
-        padding-bottom: 10 px;
-    }
+    input[type=text], input[type=password] {   
+          width: 50%;   
+          margin: 8px 0;  
+          padding: 12px 20px;   
+          display: inline-block;   
+          border: 2px solid rgb(0, 0, 0);   
+          box-sizing: border-box;   
+      }  
+      .container {   
+          padding: 25px;  
+
+      } 
+      button {   
+         background-color: #000000;   
+         width: 15%;  
+          color: rgb(184, 182, 179);   
+          padding: 15px;   
+          margin: 10px 0px;   
+          border: none;   
+          cursor: pointer; 
+            
+    }  
+    button:hover {   
+          opacity: 0.7;   
+      }   
 </style>
 
 <header class="jumbotron" style="background-color:#f1ce6c">
@@ -19,20 +39,21 @@
     </div>
 </header> 
 
-<div class = "accountCreation">
-    Enter your Email address
-    <input type="text" name="LoginEmailAddress"/><br/>
-    Enter a Username
-    <input type="text" name="LoginUserName"/><br/>
-    Enter a Password
-    <input type="password" name="LoginPassword"/><br/>
-    Confirm your Password
-    <input type="password" name="LoginPasswordConfirmation"/><br/>
-    <input type="submit" value="Create an Account"/>
+<div class = "container">
+    <form action="" name="newAccountData">
+        <label>Enter your Email address</label><br>
+        <input type="text" name="LoginEmailAddress"/><br>
+        <label>Enter a Username</label><br>
+        <input type="text" name="LoginUserName"/><br>
+        <label>Enter a Password</label><br>
+        <input type="password" name="LoginPassword"/><br>
+        <label>Confirm your Password</label><br>
+        <input type="password" name="LoginPasswordConfirmation"/><br>
+        <button type="submit">Create Account</button>   
+    </form>
+
+    <form action="/login" method="GET">
+        <button type="submit">Go Back</button>
+    </form>
 </div>
-
-<form action="/login" method="GET">
-    <input type="submit" value="Go back" />
-</form>
-
-<!-- {{template "footer.html" .}} -->
+{{template "footer.html" .}}
