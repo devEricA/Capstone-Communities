@@ -1,13 +1,28 @@
-{{set . "title" "Account Creation - Communities"}}
-<!-- {{template "header.html" .}} -->
+{{set . "title" "Account  - Communities"}}
+{{template "header.html" .}}
 
 <style>
-    .accountRecoveryEmail{
-        text-align: left;
-        height: 20 px;
-        padding-bottom: 10 px;
-        border: 1px solid black; 
-    }
+    input[type=text] {   
+          width: 50%;   
+          margin: 8px 0;  
+          padding: 12px 20px;   
+          display: inline-block;   
+          border: 2px solid rgb(0, 0, 0);   
+          box-sizing: border-box;   
+      }  
+      button {   
+         background-color: #000000;   
+         width: 15%;  
+          color: rgb(184, 182, 179);   
+          padding: 15px;   
+          margin: 10px 0px;   
+          border: none;   
+          cursor: pointer; 
+            
+    }   
+    button:hover {   
+          opacity: 0.7;   
+      }  
 </style>
 
 <header class="jumbotron" style="background-color:#f1ce6c">
@@ -20,13 +35,16 @@
     </div>
 </header> 
 
-<form method = "POST">
-    Enter the email address that you used in order to create an account :: 
-    <input type="text" name="LoginUserName"/><br/>
-</form>
+<div class="container">
+    <label>Enter the email address that you used to create your account</label>
+    <form action = "" method = "POST"></form>
+        <input type="text" name="LoginEmail"/><br/>
+        <button type="submit">Send Recovery Email</button>
+    </form>
 
-<form action="/login" method="GET">
-    <input type="submit" value="Go back" />
-</form>
+    <form action="/login" method="GET">
+        <button type="submit">Go Back</button>
+    </form>
+</div>
 
-<!-- {{template "footer.html" .}} -->
+{{template "footer.html" .}}
