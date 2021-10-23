@@ -12,6 +12,7 @@ GET     /AccountCreation                        App.AccountCreation
 GET     /Profile                                App.Profile
 GET     /AccRecovery                            App.AccRecovery
 POST    /                                       App.Index
+GET     /CreateCommunity                        App.CreateCommunity
 
 
 
