@@ -1,0 +1,53 @@
+{{set . "title" "New Event  - Communities"}}
+{{template "header.html" .}}
+
+<style>
+    input[type=text]{   
+            width: 50%;   
+            margin: 8px 0;  
+            padding: 12px 20px;   
+            display: inline-block;   
+            border: 2px solid rgb(0, 0, 0);   
+            box-sizing: border-box;   
+    }
+    button {   
+            background-color: #000000;   
+            width: 25%;  
+            color: rgb(184, 182, 179);   
+            padding: 15px;   
+            margin: 10px 0px;   
+            border: none;   
+            cursor: pointer;   
+        }  
+    button:hover {   
+            opacity: 0.7;   
+        } 
+    .container {   
+            padding: 25px; 
+            border: 3px solid #f1f1f1;   
+    
+        } 
+</style>
+
+<center><h1> New Event </h1></center> 
+
+<div class = "container">
+    <form action="" name="NewEvent">
+        <label>What is the name of the Event?</label><br>
+        <input type="text" name="EventTitle"/><br>
+        <label>What day does this event occur?</label><br>
+        <input type="text" name="EventDay"/><br>
+        <label>What time does this event occur?</label><br>
+        <input type="text" name="EventTime"/><br>
+        <label>Where is this event happening?</label><br>
+        <input type="text" name="EventLocation"/><br>
+        <label>What is going on in this event?</label><br>
+        <input type="text" name="EventContent" height=100%/><br>
+        <button type="submit">Create Post</button>   
+    </form>
+
+    <form action="/Community" method="GET">
+        <button type="submit">Cancel</button>
+    </form>
+</div>
+{{template "footer.html" .}}
