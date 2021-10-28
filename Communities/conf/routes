@@ -11,9 +11,12 @@ GET     /                                       App.Index
 GET     /AccountCreation                        App.AccountCreation
 GET     /Profile                                App.Profile
 GET     /AccRecovery                            App.AccRecovery
-POST    /                                       App.Index
 GET     /CreateCommunity                        App.CreateCommunity
-
+GET     /Community                              App.Community
+GET     /home                                   App.Home
+POST    /home                                   App.Home
+GET     /NewPost                                App.NewPost
+GET     /NewEvent                               App.NewEvent
 
 
 # Ignore favicon requests
