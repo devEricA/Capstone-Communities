@@ -17,7 +17,18 @@ const (
 	lat, lng = 33.563521, -101.879336
 )
 
-func (c App) Index(LoginUserName string, LoginPassword string) revel.Result {
+func (c App) Index() revel.Result {
+	//Consider this as our "Starter Function Area"
+	//Instantiate the database here!
+
+	return c.Redirect(App.Login)
+}
+
+func (c App) Login() revel.Result {
+	return c.Render()
+}
+
+func (c App) Home(LoginUserName string, LoginPassword string) revel.Result{
 	c.Validation.Required(LoginUserName).Message("Username is required.")
     c.Validation.MinSize(LoginUserName, 3).Message("Username is not long enough, it must have at least 3 characters.")
 	c.Validation.Required(LoginPassword).Message("Password is required.")
@@ -32,11 +43,7 @@ func (c App) Index(LoginUserName string, LoginPassword string) revel.Result {
 	createMap(lat, lng)
 	return c.Render(LoginUserName, LoginPassword)
 }
-
-func (c App) Login() revel.Result {
-	return c.Render()
-}
-
+ 
 func (c App) AccountCreation() revel.Result {
 	return c.Render()
 }
@@ -50,6 +57,18 @@ func (c App) Profile(LoginUserName string, LoginPassword string) revel.Result {
 }
 
 func (c App) CreateCommunity() revel.Result{
+	return c.Render()
+}
+
+func (c App) Community() revel.Result{
+	return c.Render()
+}
+
+func (c App) NewPost() revel.Result{
+	return c.Render()
+}
+
+func (c App) NewEvent() revel.Result{
 	return c.Render()
 }
 
