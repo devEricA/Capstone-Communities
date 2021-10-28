@@ -1,0 +1,75 @@
+{{set . "title" "Community Page  - Communities"}}
+<!-- {{template "header.html" .}} -->
+
+<style>
+.communityPosts{
+    padding-left: 10px;
+    width: 47%;
+    height: 90%;
+    border: 10px solid black;
+    left: 1%;
+    position: absolute;
+}
+
+.communityDescription{
+    padding-right: 10px;
+    width: 47%;
+    height: 10%;
+    border: 10px solid black;
+    right: 1%;
+    position: absolute;
+}
+
+.communityEvents{
+    padding-right: 10px;
+    width: 47%;
+    height: 79%;
+    border: 10px solid black;
+    right: 1%;
+    top: 18%;
+    position: absolute
+}
+
+input[type=text]{   
+        width: 50%;   
+        margin: 8px 0;  
+        padding: 12px 20px;   
+        display: inline-block;   
+        border: 2px solid rgb(0, 0, 0);   
+        box-sizing: border-box;   
+}
+button {   
+        background-color: #000000;   
+        width: 25%;  
+        color: rgb(184, 182, 179);   
+        padding: 15px;   
+        margin: 10px 0px;   
+        border: none;   
+        cursor: pointer;   
+    }  
+button:hover {   
+        opacity: 0.7;   
+    } 
+</style>
+
+<center><h1> Community Hub </h1></center> 
+<div class = "communityPosts">
+    Posts of the community will go here
+    <form action = "/NewPost" method = "GET">
+        <button type="submit">Make a new post</button><br>
+    </form>
+</div>
+
+<div class = "communityDescription">
+    Descripiton of the Community goes here
+</div>
+
+<div class = "communityEvents">
+    Events of the Community go here
+    <form action = "/NewEvent" method = "GET">
+        <button type="submit">Create a New Event</button><br>
+    </form>
+</div>
+
+<!-- {{template "footer.html" .}} -->
+
