@@ -3,10 +3,12 @@ package controllers
 import (
 	"github.com/revel/revel"
 	"image/color"
-	// _ "github.com/go-sql-driver/mysql"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/flopp/go-staticmaps"
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
+	"fmt"
 )
 
 type App struct {
@@ -23,7 +25,10 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Login success
 var NoAcc = "Wrong Email or Password" //Fail String
 var LoginSuccess = "Welcome " 
-// var db *sql.DB
+var db *sql.DB
+var dberr error
+
+
 
 const (
 	addr     = "Lubbock, TX"
@@ -33,10 +38,16 @@ const (
 func (c App) Index() revel.Result {
 	//Consider this as our "Starter Function Area"
 	//Instantiate the database here!
+	var err error
 
-	/*
-	InitDB()
-	*/
+	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage")
+
+	if err != nil {
+		panic(err.Error())
+		c.Flash.Error("Database failed to load")
+	}
+
+	db.Ping()
 	return c.Redirect(App.Login)
 }
 
@@ -45,6 +56,19 @@ func (c App) Login() revel.Result {
 	return c.Render()
 }
 
+
+func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail string, NewPasswordConfirmation string) revel.Result{
+	if(NewPassword != NewPasswordConfirmation){
+		c.Flash.Error("Passwords do not match.")
+		return c.Redirect(App.AccountCreation)
+	}else if(DBCreateAccount(NewUserName, NewPassword, NewEmail, CurrentSess)){
+		c.Flash.Success("Account Created! You may login now. ")
+		return c.Redirect(App.Login)
+	}
+	c.Flash.Error("Error occured when creating the account.")
+	defer db.Close()
+	return c.Redirect(App.AccountCreation)
+}
 /*
 func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Result{
 	if(DBLogin(LoginUserName, LoginPassword, CurrentSess)){
@@ -57,16 +81,7 @@ func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Resul
 	}
 }
 
-func (c App) CreateAccount(NewUserName string, NewPassword string, Email string,) revel.Result{
-	if(DBCreateAccount(NewUserName, NewPassword, NewEmail, CurrentSess){
-		c.Flash.Success("Account Created! You may login now. ")
-		return c.Redirect(App.Login)
-	}
-	else{
-		c.Flash.Error("Error occured when creating the account.")
-		return c.Redirect(App.AccountCreation)
-	}
-}
+
 
 func (c App) CreatePost() revel.Result{
 
@@ -162,6 +177,49 @@ func createMap(lat float64, lng float64) {
 	}
 }
 
+func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
+	var err error
+
+	//UserSearch, err := db.Query("SELECT COUNT(User_Email) FROM User WHERE User_Email = $1 ", &Email)
+	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email)
+	fmt.Printf("SQL statement is :: " + sqlStatement)
+	//UserSearch, err := db.Prepare(sqlStatement)
+	var AccountExist int
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = db.QueryRow(sqlStatement).Scan(&AccountExist)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//UserSearch.Close()
+
+	if AccountExist != 0 {
+		return false
+	}
+
+	_, err = db.Exec("INSERT INTO User (Username, Password, Email) VALUES (?, ?, ?)", &Username, &Password, &Email)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	return true
+
+}
+// func InitDB() {
+// 	var err error
+
+// 	db, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/serverstorage")
+
+// 	if err != nil {
+// 		panic(err.Error())
+// 	}
+
+// 	db.Ping()
+// }
+
 /*
 //Attempts to login user. QueryRow throws error if no user + pass combo found
 func DBLogin(Username int, Password string, CurrentSess User) bool {
@@ -201,30 +259,5 @@ func DBAccRecovery(Email string) string {
 }
 
 //Searches for an account already reigstered with an email and then will attempt to create account or return an account already exists
-func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
-	var err error
-	var AccountExist int
-	var AccExis = "An account already exists with that email."
-	var AccCreated = "Account created succesfully."
 
-	UserSearch, err := db.Query("SELECT COUNT(User_Email) FROM User WHERE User_Email = ? ", &Email)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	UserSearch.Scan(&AccountExist)
-	UserSearch.Close()
-
-	if AccountExist != 0 {
-		return false
-	}
-
-	_, err = db.Exec("INSERT INTO User (User_ID, Password, Email) VALUES (?, ?, ?)", &Username, &Password, &Email)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	return true
-
-}
 */

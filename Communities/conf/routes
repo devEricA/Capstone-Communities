@@ -18,7 +18,7 @@ POST    /home                                   App.Home
 GET     /NewPost                                App.NewPost
 GET     /NewEvent                               App.NewEvent
 # POST    /LogValidate                            App.LogValidate   
-# POST    /CreateAccount                          App.CreateAccount
+POST    /CreateAccount                          App.CreateAccount
 # POST    /CreatePost                             App.CreatePost
 # POST    /CreateCommunity                        App.CreateCommunity
 

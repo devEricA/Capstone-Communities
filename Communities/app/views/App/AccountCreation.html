@@ -1,5 +1,6 @@
 {{set . "title" "Account Creation - Communities"}}
 {{template "header.html" .}}
+{{template "flash.html" .}}
 
 <style>
     input[type=text], input[type=password] {   
@@ -33,15 +34,15 @@
 <center><h1> Create an Account </h1></center>
 
 <div class = "container">
-    <form action="" name="newAccountData">
+    <form action="/CreateAccount" name="newAccountData" method="POST">
         <label>Enter your Email address</label><br>
-        <input type="text" name="LoginEmailAddress"/><br>
+        <input type="text" name="NewEmail"/><br>
         <label>Enter a Username</label><br>
-        <input type="text" name="LoginUserName"/><br>
+        <input type="text" name="NewUserName"/><br>
         <label>Enter a Password</label><br>
-        <input type="password" name="LoginPassword"/><br>
+        <input type="password" name="NewPassword"/><br>
         <label>Confirm your Password</label><br>
-        <input type="password" name="LoginPasswordConfirmation"/><br>
+        <input type="password" name="NewPasswordConfirmation"/><br>
         <button type="submit">Create Account</button>   
     </form>
 
