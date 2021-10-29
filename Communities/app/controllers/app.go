@@ -4,10 +4,12 @@ import (
 	"github.com/revel/revel"
 	"image/color"
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/flopp/go-staticmaps"
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
+	"github.com/codingsince1985/geo-golang"
+	"github.com/codingsince1985/geo-golang/openstreetmap"
 	"fmt"
 )
 
@@ -247,6 +249,26 @@ func createMap(lat float64, lng float64) {
 	if err := gg.SavePNG("public/img/my-map.png", img); err != nil { //Downloads the image from Open Street Map
 		panic(err)
 	}
+}
+
+func reverseGeo(geocoder geo.Geocoder, lat float64, lng float64) string {
+
+	//Example: 
+	// address.City 		    // Seattle
+	// address.State 	        // WA
+	// address.CountryCode      // US 
+	// There are more available fields, but we only use these.
+
+	address, _ := geocoder.ReverseGeocode(lat, lng)
+
+	//Concatenate the string, store it, then return the string
+	var CityKey = address.CountryCode + address.State + address.City
+	
+	if(len(CityKey) > 50){
+		CityKey = CityKey[0:50]
+	}
+
+	return CityKey
 }
 
 func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
