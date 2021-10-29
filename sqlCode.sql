@@ -13,7 +13,7 @@ CREATE TABLE User (
 CREATE TABLE Communities (
         Community_ID BIGINT NOT NULL PRIMARY KEY,
         Name VARCHAR(24) NOT NULL,
-        Description(250) NOT NULL,
+        Description VARCHAR(250) NOT NULL,
         City VARCHAR(50) NOT NULL
 ) ENGINE = InnoDB;
 
