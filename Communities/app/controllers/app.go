@@ -93,16 +93,7 @@ func (c App) CreateCommunity() revel.Result{
 */
 
 func (c App) Home(LoginUserName string, LoginPassword string) revel.Result{
-	c.Validation.Required(LoginUserName).Message("Username is required.")
-    c.Validation.MinSize(LoginUserName, 3).Message("Username is not long enough, it must have at least 3 characters.")
-	c.Validation.Required(LoginPassword).Message("Password is required.")
-	c.Validation.MinSize(LoginPassword, 5).Message("Password must be at least 5 characters.")
 
-    if c.Validation.HasErrors() {
-        c.Validation.Keep()
-        c.FlashParams()
-        return c.Redirect(App.Login)
-    }
 
 	createMap(lat, lng)
 	//TODO: Render user communities, latest posts, and communities on the map
@@ -180,15 +171,16 @@ func createMap(lat float64, lng float64) {
 func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
 	var err error
 
-	//UserSearch, err := db.Query("SELECT COUNT(User_Email) FROM User WHERE User_Email = $1 ", &Email)
-	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email)
-	fmt.Printf("SQL statement is :: " + sqlStatement)
+	//Query is built here
+	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email) 
+	//fmt.Printf("SQL statement is :: " + sqlStatement)
 	//UserSearch, err := db.Prepare(sqlStatement)
 	var AccountExist int
 	if err != nil {
 		panic(err.Error())
 	}
 
+	//Query is deployed here
 	err = db.QueryRow(sqlStatement).Scan(&AccountExist)
 	if err != nil {
 		panic(err.Error())
@@ -200,10 +192,12 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 		return false
 	}
 
-	_, err = db.Exec("INSERT INTO User (Username, Password, Email) VALUES (?, ?, ?)", &Username, &Password, &Email)
+	saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email) VALUES ('%s', '%s', '%s', '%s')`, Username, Username, Password, Email)
+	fmt.Printf("Executed Statement is :: " + saveUser)
+	_, Loaderr := db.Exec(saveUser)
 
-	if err != nil {
-		panic(err.Error())
+	if Loaderr != nil {
+		panic(Loaderr.Error())
 	}
 	return true
 
