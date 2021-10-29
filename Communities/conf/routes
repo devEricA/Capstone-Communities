@@ -10,6 +10,8 @@ GET     /login                                  App.Login
 GET     /                                       App.Index
 GET     /AccountCreation                        App.AccountCreation
 GET     /Profile                                App.Profile
+POST    /UpdateUserName                         App.UpdateUserName
+POST    /UpdatePassword                         App.UpdatePassword
 GET     /AccRecovery                            App.AccRecovery
 GET     /CreateCommunity                        App.CreateCommunity
 GET     /Community                              App.Community
@@ -17,10 +19,10 @@ GET     /home                                   App.Home
 POST    /home                                   App.Home
 GET     /NewPost                                App.NewPost
 GET     /NewEvent                               App.NewEvent
-# POST    /LogValidate                            App.LogValidate   
+POST    /LogValidate                            App.LogValidate   
 POST    /CreateAccount                          App.CreateAccount
 # POST    /CreatePost                             App.CreatePost
-# POST    /CreateCommunity                        App.CreateCommunity
+POST    /ConstructCommunity                     App.ConstructCommunity
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

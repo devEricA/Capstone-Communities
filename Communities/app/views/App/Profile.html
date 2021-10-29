@@ -1,12 +1,8 @@
 {{set . "title" "Profile - Communities"}}
 {{template "header.html" .}}
+{{template "flash.html" .}}
 
 <style>
-    .profilePicture{
-        text-align: left;
-        height: 20 px;
-        padding-bottom: 10 px;  
-    }
     .UsernameAndPassword{
         text-align: left;
         height: 500 px;
@@ -51,20 +47,18 @@
 <center><h1> My Profile </h1></center> 
 
 <div class = "container">
-    <div class = "profilePicture"> 
-        <label>Profile Picture: </label>
-    </text>
-
     <div class = "UsernameAndPassword">
     Current Username: {{.LoginUserName}} 
-        <form method = "POST">
-            <input type="text" name="LoginUserName" placeholder="Change Username"/><br/>
+        <form action="\UpdateUserName" method = "POST">
+            <input type="text" name="NewUserName" placeholder="Change Username"/><br/>
+            <button type="submit">Update Username</button>
         </form>
 
         <text> Current Password: {{.LoginPassword}} </text>
-        <form method = "POST">
-            <input type="password" name="LoginPassword" placeholder = "Change Password"><br/>
-            <input type="password" name="LoginPasswordConfirm" placeholder = "Confirm Password">
+        <form action="\UpdatePassword" method = "POST">
+            <input type="password" name="NewPassword" placeholder = "Change Password"><br/>
+            <input type="password" name="NewPasswordConfirm" placeholder = "Confirm Password"><br/>
+            <button type="submit">Update Password</button>
         </form>
     </div>
 
@@ -76,7 +70,7 @@
         <label>My Posts</label>
     </div>
 
-    <form action="/" method="GET">
+    <form action="/home" method="GET">
         <button type="submit">Go Back</button>
     </form>
 </div>

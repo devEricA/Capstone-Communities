@@ -1,4 +1,5 @@
 {{set . "title" "Home - Communities"}}
+{{template "flash.html" .}}
 
 <style>
     .map{
@@ -41,13 +42,13 @@
   
   <div class="container">
     <div class="communitypages">
-      Latest news from {{.LoginUserName}}'s communities
+      Latest news from {{.CurrentUser}}'s communities
     </div>
   </div>
   
   <div class = "container">
     <div class="profileWindow">
-        Hello {{.LoginUserName}}
+        Hello {{.CurrentUser}}
         <form action="/Profile" method="GET">
           <input type="submit" value="My Profile" />
         </form>
