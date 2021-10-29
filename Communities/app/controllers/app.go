@@ -16,15 +16,14 @@ type App struct {
 }
 
 type User struct {
-	User_ID      int64
+	Username     string
 	Display_Name string
 	Bio          string
 }
 
 var CurrentSess User                  //User info
 var LoggedIn bool                     //Login success
-var NoAcc = "Wrong Email or Password" //Fail String
-var LoginSuccess = "Welcome " 
+var ActiveUser string
 var db *sql.DB
 var dberr error
 
@@ -52,7 +51,6 @@ func (c App) Index() revel.Result {
 }
 
 func (c App) Login() revel.Result {
-	// c.Flash.Error("Can I set these off?")
 	return c.Render()
 }
 
@@ -69,19 +67,21 @@ func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail stri
 	defer db.Close()
 	return c.Redirect(App.AccountCreation)
 }
-/*
+
 func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Result{
 	if(DBLogin(LoginUserName, LoginPassword, CurrentSess)){
-		LoggedIn = true; 
-		return c.Redirect(App.Home)
+		LoggedIn = true 
+		ActiveUser = LoginUserName
+		// boolDebug := fmt.Sprintf("Logged in? %t", LoggedIn)
+		// fmt.Printf(boolDebug)
+		// fmt.Printf("Active User is " + ActiveUser)
+		return c.Redirect(App.Home, ActiveUser)
 	}
-	else{
-		c.Flash.Error("Invalid Username or Password")
-		return c.Redirect(App.Login)
-	}
+	c.Flash.Error("Invalid Username or Password")
+	return c.Redirect(App.Login)
 }
 
-
+/*
 
 func (c App) CreatePost() revel.Result{
 
@@ -92,12 +92,16 @@ func (c App) CreateCommunity() revel.Result{
 }
 */
 
-func (c App) Home(LoginUserName string, LoginPassword string) revel.Result{
-
-
+func (c App) Home(CurrentUser string) revel.Result{
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
+	// boolDebug := fmt.Sprintf("Logged in? %t", LoggedIn)
+	// fmt.Printf(boolDebug)
+	// fmt.Printf("Active User is " + ActiveUser)
 	createMap(lat, lng)
 	//TODO: Render user communities, latest posts, and communities on the map
-	return c.Render(LoginUserName, LoginPassword)
+	return c.Render(ActiveUser)
 }
  
 func (c App) AccountCreation() revel.Result {
@@ -108,26 +112,103 @@ func (c App) AccRecovery() revel.Result {
 	return c.Render()
 }
 
-func (c App) Profile(LoginUserName string, LoginPassword string) revel.Result {
-	return c.Render(LoginUserName, LoginPassword)
+func (c App) Profile(CurrentUser string) revel.Result {
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
+	
+	return c.Render(ActiveUser)
+}
+
+func (c App) UpdateUserName(NewUserName string) revel.Result{
+	var err error 
+	var UserNameAlreadyExists int
+	checkStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, NewUserName)
+	err = db.QueryRow(checkStatement).Scan(&UserNameAlreadyExists)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if UserNameAlreadyExists != 0 {
+		c.Flash.Error("That username already exists")
+		return c.Redirect(App.Profile)
+	}
+	updateQuery := fmt.Sprintf(`UPDATE User SET Username = '%s', Display_Name = '%s' WHERE Username='%s'`, NewUserName, NewUserName, ActiveUser)
+	_, Updateerr := db.Exec(updateQuery)
+
+	if Updateerr != nil {
+		panic(Updateerr.Error())
+	}
+	ActiveUser = NewUserName
+	c.Flash.Success("Username has been updated!")
+	return c.Redirect(App.Profile)
+
+}
+
+func (c App) UpdatePassword(NewPassword string, NewPasswordConfirm string) revel.Result{
+	if(NewPassword != NewPasswordConfirm){
+		c.Flash.Error("Passwords do not match")
+		return c.Redirect(App.Profile)
+	}
+	updateQuery := fmt.Sprintf(`UPDATE User SET Password = '%s' WHERE Username = '%s'`, NewPassword, ActiveUser)
+	_, Updateerr := db.Exec(updateQuery)
+
+	if Updateerr != nil {
+		panic(Updateerr.Error())
+	}
+	c.Flash.Success("Password has been updated!")
+	return c.Redirect(App.Profile)
+
 }
 
 func (c App) CreateCommunity() revel.Result{
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
 	return c.Render()
 }
 
+func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription string) revel.Result{
+	var err error
+	var numberOfCommunities int
+	CommunityQuery := `SELECT COUNT(Community_ID) FROM Communities`
+	err = db.QueryRow(CommunityQuery).Scan(&numberOfCommunities)
+	if err != nil {
+		panic(err.Error())
+	}
+	addCommunityQuery := fmt.Sprintf(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (%d, '%s', '%s', '%s')`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
+	_, Loaderr := db.Exec(addCommunityQuery)
+
+	if Loaderr != nil {
+		panic(Loaderr.Error())
+	}
+	c.Flash.Success("New Community Created!")
+	return c.Redirect(App.Home)
+
+}
+
 func (c App) Community() revel.Result{
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
 	//TODO: Render Community Name, Posts, Description, and Events
 	return c.Render()
 }
 
 func (c App) NewPost() revel.Result{
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
 	return c.Render()
 }
 
 func (c App) NewEvent() revel.Result{
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
 	return c.Render()
 }
+
 
 func createMap(lat float64, lng float64) {
 	ctx := sm.NewContext() //Creates a new map 'context' 
@@ -170,11 +251,7 @@ func createMap(lat float64, lng float64) {
 
 func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
 	var err error
-
-	//Query is built here
 	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email) 
-	//fmt.Printf("SQL statement is :: " + sqlStatement)
-	//UserSearch, err := db.Prepare(sqlStatement)
 	var AccountExist int
 	if err != nil {
 		panic(err.Error())
@@ -186,14 +263,12 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 		panic(err.Error())
 	}
 
-	//UserSearch.Close()
-
 	if AccountExist != 0 {
 		return false
 	}
 
-	saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email) VALUES ('%s', '%s', '%s', '%s')`, Username, Username, Password, Email)
-	fmt.Printf("Executed Statement is :: " + saveUser)
+	saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES ('%s', '%s', '%s', '%s', 'None')`, Username, Username, Password, Email)
+	// fmt.Printf("Executed Statement is :: " + saveUser)
 	_, Loaderr := db.Exec(saveUser)
 
 	if Loaderr != nil {
@@ -201,6 +276,22 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 	}
 	return true
 
+}
+
+//Attempts to login user. QueryRow throws error if no user + pass combo found
+func DBLogin(Username string, Password string, CurrentSess User) bool {
+	var err error
+
+	sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = '%s'  AND Password = '%s'`, Username, Password)
+	UserSearch := db.QueryRow(sqlStatement)
+	switch err = UserSearch.Scan(&CurrentSess.Username, &CurrentSess.Display_Name, &CurrentSess.Bio); err {
+	case sql.ErrNoRows:
+		return false
+	case nil:
+		return true
+	default:
+		panic(err)
+	}
 }
 // func InitDB() {
 // 	var err error
@@ -215,20 +306,7 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 // }
 
 /*
-//Attempts to login user. QueryRow throws error if no user + pass combo found
-func DBLogin(Username int, Password string, CurrentSess User) bool {
-	var err error
 
-	UserSearch := db.QueryRow("SELECT User_ID, Display_Name, Bio FROM User WHERE User_ID = ? AND Password = ? ", &Username, &Password)
-	switch err = UserSearch.Scan(&CurrentSess.User_ID, &CurrentSess.Display_Name, &CurrentSess.Bio); err {
-	case sql.ErrNoRows:
-		return false
-	case nil:
-		return true
-	default:
-		panic(err)
-	}
-}
 
 //Searches for an email associated with an account and then returns whether one was found or not
 func DBAccRecovery(Email string) string {

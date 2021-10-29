@@ -42,7 +42,7 @@ button:hover {
 </div>
 
 <div class = "newCommunityData">
-    <form action = "">
+    <form action = "/ConstructCommunity" method="POST">
         <label>
             Select an place in the map where you want to place your community.
         </label><br/>
@@ -50,8 +50,8 @@ button:hover {
         <input type="text" name = "NewCommunityName" required><br/>
         <label> Enter a description about your community.</label><br/>
         <input type="text" name = "CommunityDescription" height = "25%"><br/>
-        <label> Who do you wish to add as Moderators?</label><br/>
-        <input type="text" name = "ModeratorSelections" height = "25%"><br/>
+        <!-- <label> Who do you wish to add as Moderators?</label><br/>
+        <input type="text" name = "ModeratorSelections" height = "25%"><br/> -->
         <button type="submit">Create Community</button>
     </form>
 
