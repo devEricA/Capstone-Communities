@@ -1,5 +1,6 @@
 package controllers
 
+// Packages used in our project
 import (
 	"github.com/revel/revel"
 	"image/color"
@@ -9,23 +10,46 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
 	"fmt"
+	"os"
 )
 
+// Used as a way to control renders
 type App struct {
 	*revel.Controller
 }
 
+// User defined stuct based on the database that we have
 type User struct {
 	Username     string
 	Display_Name string
+	Email 		 string
 	Bio          string
 }
 
+// Post defined struct based on the database that we have
+type Post struct{
+	Post_ID		 int
+	title		 string
+	Text         string
+	Community 	 int
+	Username_FID string
+
+}
+
+// Community defined struct based on the database that we have
+type Community struct{
+	Community_ID int
+	Name 		 string
+	Descrption   string
+	City         string
+}
+
+// Global Variables
 var CurrentSess User                  //User info
-var LoggedIn bool                     //Login success
-var ActiveUser string
+var LoggedIn bool                     //Whether or not the user is logged in
+var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
-var dberr error
+// var dbAsHtml *sql.DB
 
 
 
@@ -34,55 +58,72 @@ const (
 	lat, lng = 33.563521, -101.879336
 )
 
+//By default, Index is the first page that loads in Revel
+//We are using this to open up our database and make queries. 
 func (c App) Index() revel.Result {
-	//Consider this as our "Starter Function Area"
-	//Instantiate the database here!
+	//Error that will display if the database connection fails
 	var err error
 
+	//Opening the connection to the database
+	//This assumes that the database username and password is root
 	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage")
 
+	//If database fails to connect, display the error mentioning that the database failed to connect
 	if err != nil {
 		panic(err.Error())
 		c.Flash.Error("Database failed to load")
 	}
 
+	// TODO: Find a way to take sql input and output in HTML
+	// dbAsHtml, err = sql.Open("mysql", )
+
+	//Ping the database in order to ensure that it is connected
 	db.Ping()
+
+	//After connecting to the database, redirect to the Login page
 	return c.Redirect(App.Login)
 }
 
+//Renders the login page
 func (c App) Login() revel.Result {
 	return c.Render()
 }
 
 
+//Handles Account Creation
+//Called whenever a "CreateAccount" form is submitted 
 func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail string, NewPasswordConfirmation string) revel.Result{
+	//If passwords do not match, redirect to the Account Creation page
 	if(NewPassword != NewPasswordConfirmation){
 		c.Flash.Error("Passwords do not match.")
 		return c.Redirect(App.AccountCreation)
 	}else if(DBCreateAccount(NewUserName, NewPassword, NewEmail, CurrentSess)){
+		// If the creation of the account is successful, redirect to the login page.
 		c.Flash.Success("Account Created! You may login now. ")
 		return c.Redirect(App.Login)
 	}
+	//If an error occured when creating the account, return to the account creation page. 
 	c.Flash.Error("Error occured when creating the account.")
 	defer db.Close()
 	return c.Redirect(App.AccountCreation)
 }
 
+//Function that checks whether or not the inputted login credentials are valid
 func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Result{
+	//If the login is successful, direct to the Home page
+	//Set a flag that the login is successful
 	if(DBLogin(LoginUserName, LoginPassword, CurrentSess)){
 		LoggedIn = true 
 		ActiveUser = LoginUserName
-		// boolDebug := fmt.Sprintf("Logged in? %t", LoggedIn)
-		// fmt.Printf(boolDebug)
-		// fmt.Printf("Active User is " + ActiveUser)
 		return c.Redirect(App.Home, ActiveUser)
 	}
+	//When invalid credentials are inputted, load up an erro message stating that the input is valid. 
 	c.Flash.Error("Invalid Username or Password")
 	return c.Redirect(App.Login)
 }
 
 /*
-
+//TODO: Pull posts from Databasee
 func (c App) CreatePost() revel.Result{
 
 }
@@ -92,34 +133,39 @@ func (c App) CreateCommunity() revel.Result{
 }
 */
 
+//Home Page
 func (c App) Home(CurrentUser string) revel.Result{
+	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
-	// boolDebug := fmt.Sprintf("Logged in? %t", LoggedIn)
-	// fmt.Printf(boolDebug)
-	// fmt.Printf("Active User is " + ActiveUser)
+	//Create the map for the user to explore
 	createMap(lat, lng)
 	//TODO: Render user communities, latest posts, and communities on the map
 	return c.Render(ActiveUser)
 }
  
+//Renders the account creation page
 func (c App) AccountCreation() revel.Result {
 	return c.Render()
 }
 
+//Renders account recovery
 func (c App) AccRecovery() revel.Result {
 	return c.Render()
 }
 
+//Renders Profilepage
 func (c App) Profile(CurrentUser string) revel.Result {
+	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
-	
 	return c.Render(ActiveUser)
 }
 
+//Function for updating the user name
+//Called whenever the "UpdateUserName" form is submitted in the HTML
 func (c App) UpdateUserName(NewUserName string) revel.Result{
 	var err error 
 	var UserNameAlreadyExists int
@@ -292,6 +338,19 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	default:
 		panic(err)
 	}
+}
+
+func LoadPosts() revel.Result{
+	//Load the HTML file here
+	path := "app/views/Posts.html"
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
+	if err !=nil{
+		panic(err)
+	}
+
+
+
+
 }
 // func InitDB() {
 // 	var err error
