@@ -1,5 +1,6 @@
 {{set . "title" "New Post  - Communities"}}
 {{template "header.html" .}}
+{{template "flash.html" .}}
 
 <style>
 input[type=text]{   
@@ -31,11 +32,11 @@ button:hover {
 <center><h1> New Post </h1></center> 
 
 <div class = "container">
-    <form action="" name="NewPostData">
+    <form action="/ConstructPost" method = "POST">
         <label>What do you want to title your post?</label><br>
         <input type="text" name="PostTitle"/><br>
         <label>What do you want to talk about in this post?</label><br>
-        <input type="text" name="PostContent" height=100%/><br>
+        <input type="text" name="PostContent" style = "height: 70%;"/><br>
         <button type="submit">Create Post</button>   
     </form>
 

@@ -10,7 +10,8 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
 	"fmt"
-	//"os"
+	"bufio"
+	"os"
 )
 
 // Used as a way to control renders
@@ -18,30 +19,10 @@ type App struct {
 	*revel.Controller
 }
 
-// User defined stuct based on the database that we have
 type User struct {
 	Username     string
 	Display_Name string
-	Email 		 string
 	Bio          string
-}
-
-// Post defined struct based on the database that we have
-type Post struct{
-	Post_ID		 int
-	title		 string
-	Text         string
-	Community 	 int
-	Username_FID string
-
-}
-
-// Community defined struct based on the database that we have
-type Community struct{
-	Community_ID int
-	Name 		 string
-	Descrption   string
-	City         string
 }
 
 // Global Variables
@@ -50,8 +31,6 @@ var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
 // var dbAsHtml *sql.DB
-
-
 
 const (
 	addr     = "Lubbock, TX"
@@ -69,6 +48,11 @@ func (c App) Index() revel.Result {
 	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage")
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
+
+	//Load the communities nearby
+	LoadAllCommunities()
+	LoadAllPosts()
+
 	if err != nil {
 		panic(err.Error())
 		c.Flash.Error("Database failed to load")
@@ -122,27 +106,22 @@ func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Resul
 	return c.Redirect(App.Login)
 }
 
-/*
-//TODO: Pull posts from Databasee
-func (c App) CreatePost() revel.Result{
-
-}
-
-func (c App) CreateCommunity() revel.Result{
-
-}
-*/
-
 //Home Page
-func (c App) Home(CurrentUser string) revel.Result{
+func (c App) Home(LoginUserName string) revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
+	LoginUserName = ActiveUser
 	//Create the map for the user to explore
 	createMap(lat, lng)
+
+	//Load the communities nearby
+	LoadAllCommunities()
+	LoadAllPosts()
+
 	//TODO: Render user communities, latest posts, and communities on the map
-	return c.Render(ActiveUser)
+	return c.Render(LoginUserName)
 }
  
 //Renders the account creation page
@@ -252,12 +231,24 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 		return c.Redirect(App.Login);
 	}
 	var err error	// error that returns during the query
+	var communityAlreadyExists int // Checking for the existence of community, don't want duplicates due to confusion
 	var numberOfCommunities int	// keeps track of the number of communities
+
+	CommunityDuplicateCheck :=fmt.Sprintf(`SELECT COUNT(NAME) FROM Communities WHERE NAME = '%s'`, NewCommunityName)
+	err = db.QueryRow(CommunityDuplicateCheck).Scan(&communityAlreadyExists)
+	//Error occured during the check, panic
+	if err != nil {
+		panic(err.Error())
+	}
+	if communityAlreadyExists != 0{
+		c.Flash.Error("That Community already exists")
+		return c.Redirect(App.CreateCommunity)
+	}
+
 
 	//Checks for number of communities
 	CommunityQuery := `SELECT COUNT(Community_ID) FROM Communities`
 	err = db.QueryRow(CommunityQuery).Scan(&numberOfCommunities)
-	
 	//Error occured during the check, panic
 	if err != nil {
 		panic(err.Error())
@@ -271,6 +262,9 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 	if Loaderr != nil {
 		panic(Loaderr.Error())
 	}
+	
+	//Refresh the Communities tab to pick up the newly registered community
+	LoadAllCommunities()
 
 	//Display a success message detailing the community creation. 
 	c.Flash.Success("New Community Created!")
@@ -278,6 +272,51 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 
 }
 
+func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
+	var err error
+	var TitleExists int
+	var DescriptionExists int
+	var numberOfPosts int
+
+	TitleQuery := fmt.Sprintf(`SELECT COUNT(Title) FROM Posts WHERE Title = '%s'`, PostTitle)
+	err = db.QueryRow(TitleQuery).Scan(&TitleExists)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	if TitleExists !=0{
+		c.Flash.Error("A post with that title already exists")
+		return c.Redirect(App.NewPost)
+	}
+
+	DescriptionQuery := fmt.Sprintf(`SELECT COUNT(Text) FROM Posts WHERE Text = '%s'`)
+	err = db.QueryRow(DescriptionQuery).Scan(&DescriptionExists)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	if DescriptionExists != 0{
+		c.Flash.Error("A post with the description already exists")
+		return c.Redirect(App.NewPost)
+	}
+
+	PostCountQuery := fmt.Sprintf(`SELECT COUNT(Post_ID) FROM Posts`)
+	err = db.QueryRow(PostCountQuery).Scan(&numberOfPosts)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	LoadPostQuery := fmt.Sprintf(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (%d, '%s', '%s', %d, '%s')`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
+	_, Loaderr := db.Exec(LoadPostQuery)
+	if Loaderr != nil{
+		panic(Loaderr.Error())
+	}
+
+	c.Flash.Success("Post Created!")
+	LoadAllPosts()
+	return c.Redirect(App.Home)
+
+}
 
 //Renders the Community page
 func (c App) Community() revel.Result{
@@ -412,8 +451,128 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	}
 }
 
+
+func LoadAllCommunities(){
+	path := "app/views/Communities.html"
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
+	if err !=nil{
+		panic(err)
+	}
+	// Variable used to separate Community positions
+	var topTrack int = 3
+
+	allCommunitiesQuery := `SELECT Name, Description FROM Communities`
+	allCommunities, Qerr := db.Query(allCommunitiesQuery)
+	if Qerr != nil{
+		panic(Qerr)
+	}
+	// var Name string;
+	// for allCommunities.Next(){
+	// 	readerr := allCommunities.Scan(&Name)
+	// 	if readerr != nil{
+	// 		panic(readerr.Error())
+	// 	}
+	// 	fmt.Print("Community " + Name + " exists.\n")
+	// }
+
+	defer file.Close()
+	sqlToHtml := bufio.NewWriter(file)
+	
+	//top = 3%
+	// styleForWindows := `
+	// <style>
+	// .communityWindow{
+	// 	width: 94%;
+	// 	height: 10%;
+	// 	border: 10px solid black;
+	// 	position: absolute;
+	// 	right: 1%;
+	//   }
+	// // </style>`
+	// _, StyleRenderErr := sqlToHtml.WriteString(styleForWindows)
+	// if StyleRenderErr != nil{
+	// 	panic(StyleRenderErr.Error())
+	// }
+	for allCommunities.Next(){
+		var Name string
+		var Description string
+		
+		readerr := allCommunities.Scan(&Name, &Description)
+		if readerr != nil{
+			panic(readerr.Error())
+		}
+		percentage := fmt.Sprintf("style= \"top:%d%%;\"", topTrack)
+		
+		htmlToRender := fmt.Sprintf(`
+			<div class = "communityWindow" %s>
+				<b>%s</b><br/>
+				%s
+				<form action="/Community" method="GET" right="1%%">
+					<input type="submit" value="Visit Community" />
+				</form>
+		    </div>
+			`,percentage, Name, Description)
+		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
+		if htmlRenderErr != nil{
+			panic(htmlRenderErr.Error())
+		}
+		topTrack += 11
+	}
+	if err := sqlToHtml.Flush(); err != nil {
+        panic(err.Error())
+    }
+
+}
+
+func LoadAllPosts(){
+	path := "app/views/LatestPosts.html"
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
+	if err !=nil{
+		panic(err)
+	}
+
+	var toptrack int = 4
+
+	allPostsQuery := `SELECT Title, Text FROM Posts`
+	allPosts, Qerr := db.Query(allPostsQuery)
+	if Qerr != nil{
+		panic(err)
+	}
+
+	defer file.Close()
+	sqlToHtml := bufio.NewWriter(file)
+
+	for allPosts.Next(){
+		var Title string
+		var Text string
+		readerr := allPosts.Scan(&Title, &Text)
+		if readerr != nil{
+			panic(readerr.Error())
+		}
+		percentage := fmt.Sprintf("style= \"top:%d%%;\"", toptrack)
+
+		htmlToRender := fmt.Sprintf(`
+		<div class = "postWindow" %s>
+			<b> %s </b><br/>
+			%s
+		</div>
+		`, percentage, Title, Text)
+		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
+
+		if htmlRenderErr != nil{
+			panic(htmlRenderErr.Error())
+		}
+		toptrack += 11
+	}
+
+	if err := sqlToHtml.Flush(); err != nil {
+		panic(err.Error())
+	}
+
+}
+
 /*
-func LoadPosts() revel.Result{
+func LoadAllPosts() revel.Result{
 	//Load the HTML file here
 	path := "app/views/Posts.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
