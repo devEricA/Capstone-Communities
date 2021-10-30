@@ -10,7 +10,7 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/golang/geo/s2"
 	"fmt"
-	"os"
+	//"os"
 )
 
 // Used as a way to control renders
@@ -103,8 +103,8 @@ func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail stri
 		return c.Redirect(App.Login)
 	}
 	//If an error occured when creating the account, return to the account creation page. 
-	c.Flash.Error("Error occured when creating the account.")
-	defer db.Close()
+	c.Flash.Error("Error occured when creating the account, email or username already exists.")
+	// defer db.Close()
 	return c.Redirect(App.AccountCreation)
 }
 
@@ -165,74 +165,121 @@ func (c App) Profile(CurrentUser string) revel.Result {
 }
 
 //Function for updating the user name
-//Called whenever the "UpdateUserName" form is submitted in the HTML
+//Called whenever the "UpdateUserName" form is submitted in Profile.html
 func (c App) UpdateUserName(NewUserName string) revel.Result{
-	var err error 
-	var UserNameAlreadyExists int
+	//If an attempt is made to access the page without being logged in, remain in Login page
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
+	var err error //General Error
+	var UserNameAlreadyExists int //Checks for whether or not the username exists already
+
+	//SQL statement to check whether or not the username exists. 
 	checkStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, NewUserName)
 	err = db.QueryRow(checkStatement).Scan(&UserNameAlreadyExists)
 	if err != nil {
+		//If something went wrong with the query, panic
 		panic(err.Error())
 	}
 
+	//If the username already exists, flash an error, then redirect back to the Profile page 
 	if UserNameAlreadyExists != 0 {
 		c.Flash.Error("That username already exists")
 		return c.Redirect(App.Profile)
 	}
+	//Query to update the username
 	updateQuery := fmt.Sprintf(`UPDATE User SET Username = '%s', Display_Name = '%s' WHERE Username='%s'`, NewUserName, NewUserName, ActiveUser)
 	_, Updateerr := db.Exec(updateQuery)
 
+	//If something went wrong during the render, panic
 	if Updateerr != nil {
 		panic(Updateerr.Error())
 	}
+
+	//If user update is successful, update the active user to the new username, 
+	//then display a success message and redirect to the profile. 
 	ActiveUser = NewUserName
 	c.Flash.Success("Username has been updated!")
 	return c.Redirect(App.Profile)
 
 }
 
+
+//Function for updating the password
+//Called whenever the "UpdatePassword" form is submitted in Profile.html
 func (c App) UpdatePassword(NewPassword string, NewPasswordConfirm string) revel.Result{
+	//If an attempt is made to access the page without being logged in, remain in Login page
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
+	//If passwords do not match, redirect back to the profile
+	//and display an error message
 	if(NewPassword != NewPasswordConfirm){
 		c.Flash.Error("Passwords do not match")
 		return c.Redirect(App.Profile)
 	}
+
+	//Query to update to password for the user
 	updateQuery := fmt.Sprintf(`UPDATE User SET Password = '%s' WHERE Username = '%s'`, NewPassword, ActiveUser)
 	_, Updateerr := db.Exec(updateQuery)
 
+	//If something went wrong with the password update, panic
 	if Updateerr != nil {
 		panic(Updateerr.Error())
 	}
+
+	//Display a Success message detailing that the password has been updated
+	//Then redirect to the profile page
 	c.Flash.Success("Password has been updated!")
 	return c.Redirect(App.Profile)
 
 }
 
+//Renders the community creation page
 func (c App) CreateCommunity() revel.Result{
+	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
 	return c.Render()
 }
 
+//Function that constructs the community
+//Called whenever a "ConstructCommunity" form is submitted in CreateCommunity.html
 func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription string) revel.Result{
-	var err error
-	var numberOfCommunities int
+	//If an attempt is made to access the page without being logged in, remain in Login page
+	if(!LoggedIn){
+		return c.Redirect(App.Login);
+	}
+	var err error	// error that returns during the query
+	var numberOfCommunities int	// keeps track of the number of communities
+
+	//Checks for number of communities
 	CommunityQuery := `SELECT COUNT(Community_ID) FROM Communities`
 	err = db.QueryRow(CommunityQuery).Scan(&numberOfCommunities)
+	
+	//Error occured during the check, panic
 	if err != nil {
 		panic(err.Error())
 	}
+
+	//Adding the inputted community
 	addCommunityQuery := fmt.Sprintf(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (%d, '%s', '%s', '%s')`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
 	_, Loaderr := db.Exec(addCommunityQuery)
 
+	//if an error occured with the community addition, panic
 	if Loaderr != nil {
 		panic(Loaderr.Error())
 	}
+
+	//Display a success message detailing the community creation. 
 	c.Flash.Success("New Community Created!")
 	return c.Redirect(App.Home)
 
 }
 
+
+//Renders the Community page
 func (c App) Community() revel.Result{
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
@@ -241,6 +288,7 @@ func (c App) Community() revel.Result{
 	return c.Render()
 }
 
+//Renders the New Post page
 func (c App) NewPost() revel.Result{
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
@@ -248,6 +296,7 @@ func (c App) NewPost() revel.Result{
 	return c.Render()
 }
 
+//Renders the New Event page
 func (c App) NewEvent() revel.Result{
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
@@ -255,7 +304,7 @@ func (c App) NewEvent() revel.Result{
 	return c.Render()
 }
 
-
+//Creates the map for the home page
 func createMap(lat float64, lng float64) {
 	ctx := sm.NewContext() //Creates a new map 'context' 
 	ctx.SetSize(1080, 1080) //Sets the size of the map in pixels(?) 
@@ -295,51 +344,75 @@ func createMap(lat float64, lng float64) {
 	}
 }
 
+//Creates the account from the submission data of AccountCreation.html
 func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
-	var err error
+	var err error //Error to deploy
+
+	//Checking for an already existing email
 	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email) 
 	var AccountExist int
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//Query is deployed here
 	err = db.QueryRow(sqlStatement).Scan(&AccountExist)
+
+	//If an error occured during the check, Panic
 	if err != nil {
 		panic(err.Error())
 	}
 
+	//Returning false if an email already exists, 
+	//Thus preventing a creation of an account 
 	if AccountExist != 0 {
 		return false
 	}
 
+	//Checking for an already existing username
+	UsersqlStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, Username) 
+	var UserExist int
+	err = db.QueryRow(UsersqlStatement).Scan(&UserExist)
+
+	//If an error occured during the check, Panic
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//Returning false if the username already exists, 
+	//Thus preventing a creation of an account 
+	if UserExist != 0 {
+		return false
+	}
+
+	//Loading the user into the user database table
 	saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES ('%s', '%s', '%s', '%s', 'None')`, Username, Username, Password, Email)
-	// fmt.Printf("Executed Statement is :: " + saveUser)
 	_, Loaderr := db.Exec(saveUser)
 
+	//Error occured during the load, panic
 	if Loaderr != nil {
 		panic(Loaderr.Error())
 	}
+
+	//Returning true to detail an account creation success
 	return true
 
 }
 
 //Attempts to login user. QueryRow throws error if no user + pass combo found
 func DBLogin(Username string, Password string, CurrentSess User) bool {
-	var err error
+	var err error //Error to deploy
 
+	//SQL statment to query for the credententials. 
 	sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = '%s'  AND Password = '%s'`, Username, Password)
 	UserSearch := db.QueryRow(sqlStatement)
+	//Switching the error and chacking to see whether or not the user exists. 
 	switch err = UserSearch.Scan(&CurrentSess.Username, &CurrentSess.Display_Name, &CurrentSess.Bio); err {
-	case sql.ErrNoRows:
+	case sql.ErrNoRows://User does not exist case, return false
 		return false
-	case nil:
+	case nil://Err nil, there is indeed a user, return true. 
 		return true
 	default:
 		panic(err)
 	}
 }
 
+/*
 func LoadPosts() revel.Result{
 	//Load the HTML file here
 	path := "app/views/Posts.html"
@@ -352,6 +425,7 @@ func LoadPosts() revel.Result{
 
 
 }
+*/
 // func InitDB() {
 // 	var err error
 
