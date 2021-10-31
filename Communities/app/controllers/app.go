@@ -39,7 +39,7 @@ const (
 )
 
 // retrieve env-var for maria db password
-maria_pwd = 
+maria_pwd = os.Getenv("MYSQL_PWD")
 
 //By default, Index is the first page that loads in Revel
 //We are using this to open up our database and make queries. 
