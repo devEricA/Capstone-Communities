@@ -30,7 +30,7 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
-var string maria_pwd
+var maria_pwd string
 // var dbAsHtml *sql.DB
 
 const (
