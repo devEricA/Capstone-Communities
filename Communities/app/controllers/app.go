@@ -48,15 +48,14 @@ func (c App) Index() revel.Result {
 	db, err = sql.Open("mysql", "root:root@localhost/serverstorage")
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
-
-	//Load the communities nearby
-	LoadAllCommunities()
-	LoadAllPosts()
-
 	if err != nil {
 		panic(err.Error())
 		c.Flash.Error("Database failed to load")
 	}
+
+	//Load the communities nearby
+	LoadAllCommunities()
+	LoadAllPosts()
 
 	// TODO: Find a way to take sql input and output in HTML
 	// dbAsHtml, err = sql.Open("mysql", )
@@ -440,6 +439,7 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	//SQL statment to query for the credententials. 
 	sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = '%s'  AND Password = '%s'`, Username, Password)
 	UserSearch := db.QueryRow(sqlStatement)
+	// UserSearch := db.QueryROw
 	//Switching the error and chacking to see whether or not the user exists. 
 	switch err = UserSearch.Scan(&CurrentSess.Username, &CurrentSess.Display_Name, &CurrentSess.Bio); err {
 	case sql.ErrNoRows://User does not exist case, return false
