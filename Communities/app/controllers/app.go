@@ -30,12 +30,16 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
+var maria_pwd
 // var dbAsHtml *sql.DB
 
 const (
 	addr     = "Lubbock, TX"
 	lat, lng = 33.563521, -101.879336
 )
+
+// retrieve env-var for maria db password
+maria_pwd = os.Getenv("MYSQL_PWD")
 
 //By default, Index is the first page that loads in Revel
 //We are using this to open up our database and make queries. 
@@ -45,7 +49,7 @@ func (c App) Index() revel.Result {
 
 	//Opening the connection to the database
 	//This assumes that the database username and password is root
-	db, err = sql.Open("mysql", "root:root@localhost/serverstorage")
+   db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
 	if err != nil {
