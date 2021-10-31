@@ -30,13 +30,16 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
-maria_pwd := os.Getenv("MYSQL_PWD")
+var string maria_pwd
 // var dbAsHtml *sql.DB
 
 const (
 	addr     = "Lubbock, TX"
 	lat, lng = 33.563521, -101.879336
 )
+
+// retrieve env-var for maria db password
+maria_pwd = 
 
 //By default, Index is the first page that loads in Revel
 //We are using this to open up our database and make queries. 
