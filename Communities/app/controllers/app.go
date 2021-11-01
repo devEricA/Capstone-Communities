@@ -12,6 +12,9 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+   "time"
+   "log"
+   "strconv"
 )
 
 // Used as a way to control renders
@@ -30,6 +33,7 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
+var logger log.Logger
 // var dbAsHtml *sql.DB
 
 const (
@@ -37,11 +41,28 @@ const (
 	lat, lng = 33.563521, -101.879336
 )
 
-// retrieve env-var for maria db password
+// performance logging helpers
+func startPerfMeasure() time.Time {
+   return time.Now()
+}
+
+func finishPerfMeasure(start time.Time, name string) {
+   duration := time.Since(start)
+   logger.Println(name + " execution time: " + strconv.Itoa(int(duration.Milliseconds())))
+}
 
 //By default, Index is the first page that loads in Revel
 //We are using this to open up our database and make queries. 
 func (c App) Index() revel.Result {
+   //Setup logging 
+   performanceLogfile, err := os.OpenFile("perf.log",
+      os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+   if err != nil {
+      log.Println(err)
+   }
+   defer performanceLogfile.Close()
+   logger = log.New(performanceLogfile, "[PERFORMANCE] ", log.LstdFlags)
+
 	//Error that will display if the database connection fails
 	var err error
 
