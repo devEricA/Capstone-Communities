@@ -14,7 +14,6 @@ import (
 	"os"
    "time"
    "log"
-   "strconv"
 )
 
 // Used as a way to control renders
