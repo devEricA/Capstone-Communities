@@ -33,7 +33,7 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var db *sql.DB
-var logger log.Logger
+var logger *log.Logger
 // var dbAsHtml *sql.DB
 
 const (
@@ -55,10 +55,10 @@ func finishPerfMeasure(start time.Time, name string) {
 //We are using this to open up our database and make queries. 
 func (c App) Index() revel.Result {
    //Setup logging 
-   performanceLogfile, err := os.OpenFile("perf.log",
+   performanceLogfile, f_err := os.OpenFile("perf.log",
       os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-   if err != nil {
-      log.Println(err)
+   if f_err != nil {
+      log.Println(f_err)
    }
    defer performanceLogfile.Close()
    logger = log.New(performanceLogfile, "[PERFORMANCE] ", log.LstdFlags)
