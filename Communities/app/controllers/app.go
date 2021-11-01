@@ -48,7 +48,7 @@ func startPerfMeasure() time.Time {
 
 func finishPerfMeasure(start time.Time, name string) {
    duration := time.Since(start)
-   logger.Println(name + " execution time: " + strconv.Itoa(int(duration.Milliseconds())))
+   logger.Println(name + " execution time: " + fmt.Sprintf("%f", duration.Milliseconds()))
 }
 
 //By default, Index is the first page that loads in Revel
