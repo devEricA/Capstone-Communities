@@ -477,6 +477,7 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 
 
 func LoadAllCommunities(){
+   defer finishPerfMeasure(startPerfMeasure(), "LoadAllCommunities()")
 	path := "app/views/Communities.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err !=nil{
@@ -549,6 +550,7 @@ func LoadAllCommunities(){
 }
 
 func LoadAllPosts(){
+   defer finishPerfMeasure(startPerfMeasure(), "LoadAllPosts()")
 	path := "app/views/LatestPosts.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err !=nil{
