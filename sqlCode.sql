@@ -4,7 +4,7 @@ use serverstorage;
 CREATE TABLE User (
         Username VARCHAR(24) NOT NULL PRIMARY KEY,
         Display_Name VARCHAR(24) NOT NULL,
-        Password VARCHAR(24) NOT NULL,
+        Password VARCHAR(60) NOT NULL,
         Email VARCHAR(50) NOT NULL,
         Bio VARCHAR(250)
 ) ENGINE = InnoDB;
@@ -21,7 +21,7 @@ CREATE TABLE Communities (
 CREATE TABLE Posts (
         Post_ID BIGINT NOT NULL PRIMARY KEY,
         Title VARCHAR(50) NOT NULL,
-        Text VARCHAR(50),
+        Text VARCHAR(500),
         Community BIGINT NOT NULL,
         Username_FID VARCHAR(24) NOT NULL,
         CONSTRAINT `Post`
