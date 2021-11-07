@@ -532,7 +532,7 @@ func LoadAllCommunities(){
 				<b>%s</b><br/>
 				%s
 				<form action="/Community" method="GET" right="1%%">
-					<input type="submit" value="Visit Community" />
+					<button type="submit">Visit Community</button><br>
 				</form>
 		    </div>
 			`,percentage, Name, Description)
@@ -540,7 +540,7 @@ func LoadAllCommunities(){
 		if htmlRenderErr != nil{
 			panic(htmlRenderErr.Error())
 		}
-		topTrack += 11
+		topTrack += 9
 	}
 	if err := sqlToHtml.Flush(); err != nil {
         panic(err.Error())
