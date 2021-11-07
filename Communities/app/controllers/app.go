@@ -67,9 +67,9 @@ func (c App) Index() revel.Result {
 	var err error
 
 	//Opening the connection to the database
-	maria_pwd := os.Getenv("MYSQL_PWD")
-	db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
-   //db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage") // FOR USE WITH LOCAL INSTANCES ONLY
+	// maria_pwd := os.Getenv("MYSQL_PWD")
+	// db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
+   	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage") // FOR USE WITH LOCAL INSTANCES ONLY
 
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
@@ -107,8 +107,8 @@ func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail stri
 		return c.Redirect(App.AccountCreation)
 	}else if(DBCreateAccount(NewUserName, NewPassword, NewEmail, CurrentSess)){
 		// If the creation of the account is successful, redirect to the login page.
-		c.Flash.Success("Account Created! You may login now. ")
-		return c.Redirect(App.Login)
+		c.Flash.Success("Account Created!")
+		return c.Redirect(App.TermsOfService)
 	}
 	//If an error occured when creating the account, return to the account creation page. 
 	c.Flash.Error("Error occured when creating the account, email or username already exists.")
@@ -355,7 +355,7 @@ func (c App) Community() revel.Result{
 }
 
 //Renders the New Post page
-func (c App) NewPost() revel.Result{
+func (c App) NewPost() revel.Result{{}
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
@@ -368,6 +368,10 @@ func (c App) NewEvent() revel.Result{
 		return c.Redirect(App.Login);
 	}
 	return c.Render()
+}
+
+func (c App) TermsOfService() revel.Result{
+	return c.Render()	
 }
 
 //Creates the map for the home page
@@ -495,6 +499,12 @@ func LoadAllCommunities(){
 	if err !=nil{
 		panic(err)
 	}
+
+	cleanErr := os.Truncate(path, 0)
+	if cleanErr != nil{
+		panic(cleanErr)
+	}
+
 	// Variable used to separate Community positions
 	var topTrack int = 3
 
@@ -503,33 +513,10 @@ func LoadAllCommunities(){
 	if Qerr != nil{
 		panic(Qerr)
 	}
-	// var Name string;
-	// for allCommunities.Next(){
-	// 	readerr := allCommunities.Scan(&Name)
-	// 	if readerr != nil{
-	// 		panic(readerr.Error())
-	// 	}
-	// 	fmt.Print("Community " + Name + " exists.\n")
-	// }
 
 	defer file.Close()
 	sqlToHtml := bufio.NewWriter(file)
-	
-	//top = 3%
-	// styleForWindows := `
-	// <style>
-	// .communityWindow{
-	// 	width: 94%;
-	// 	height: 10%;
-	// 	border: 10px solid black;
-	// 	position: absolute;
-	// 	right: 1%;
-	//   }
-	// // </style>`
-	// _, StyleRenderErr := sqlToHtml.WriteString(styleForWindows)
-	// if StyleRenderErr != nil{
-	// 	panic(StyleRenderErr.Error())
-	// }
+
 	for allCommunities.Next(){
 		var Name string
 		var Description string
@@ -569,6 +556,10 @@ func LoadAllPosts(){
 		panic(err)
 	}
 
+	cleanErr := os.Truncate(path, 0)
+	if cleanErr != nil{
+		panic(cleanErr)
+	}
 	var toptrack int = 4
 
 	allPostsQuery := `SELECT Title, Text FROM Posts`

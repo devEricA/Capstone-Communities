@@ -24,6 +24,7 @@ POST    /CreateAccount                          App.CreateAccount
 POST    /ConstructPost                          App.ConstructPost
 # POST    /ConstructEvent                            App.ConstructEvent
 POST    /ConstructCommunity                     App.ConstructCommunity
+GET     /TermsOfService                         App.TermsOfService
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
