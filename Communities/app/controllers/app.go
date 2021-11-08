@@ -14,6 +14,7 @@ import (
 	"os"
    "time"
    "log"
+   "golang.org/x/crypto/bcrypt"
 )
 
 // Used as a way to control renders
@@ -66,9 +67,10 @@ func (c App) Index() revel.Result {
 	var err error
 
 	//Opening the connection to the database
-	//This assumes that the database username and password is root
-   maria_pwd := os.Getenv("MYSQL_PWD")
-   db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
+	maria_pwd := os.Getenv("MYSQL_PWD")
+	db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
+   //db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage") // FOR USE WITH LOCAL INSTANCES ONLY
+
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
 	if err != nil {
@@ -176,8 +178,8 @@ func (c App) UpdateUserName(NewUserName string) revel.Result{
 	var UserNameAlreadyExists int //Checks for whether or not the username exists already
 
 	//SQL statement to check whether or not the username exists. 
-	checkStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, NewUserName)
-	err = db.QueryRow(checkStatement).Scan(&UserNameAlreadyExists)
+	//checkStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, NewUserName)
+	err = db.QueryRow(`SELECT COUNT(Username) FROM User WHERE Username = ?`, NewUserName).Scan(&UserNameAlreadyExists)
 	if err != nil {
 		//If something went wrong with the query, panic
 		panic(err.Error())
@@ -189,8 +191,8 @@ func (c App) UpdateUserName(NewUserName string) revel.Result{
 		return c.Redirect(App.Profile)
 	}
 	//Query to update the username
-	updateQuery := fmt.Sprintf(`UPDATE User SET Username = '%s', Display_Name = '%s' WHERE Username='%s'`, NewUserName, NewUserName, ActiveUser)
-	_, Updateerr := db.Exec(updateQuery)
+	// updateQuery := fmt.Sprintf(`UPDATE User SET Username = '%s', Display_Name = '%s' WHERE Username='%s'`, NewUserName, NewUserName, ActiveUser)
+	_, Updateerr := db.Exec(`UPDATE User SET Username = ?, Display_Name = ? WHERE Username=?`, NewUserName, NewUserName, ActiveUser)
 
 	//If something went wrong during the render, panic
 	if Updateerr != nil {
@@ -219,10 +221,13 @@ func (c App) UpdatePassword(NewPassword string, NewPasswordConfirm string) revel
 		c.Flash.Error("Passwords do not match")
 		return c.Redirect(App.Profile)
 	}
-
+	NewHashedPassword, Herr := Hash(NewPassword)
+	if Herr != nil{
+		panic(Herr.Error())
+	}
 	//Query to update to password for the user
-	updateQuery := fmt.Sprintf(`UPDATE User SET Password = '%s' WHERE Username = '%s'`, NewPassword, ActiveUser)
-	_, Updateerr := db.Exec(updateQuery)
+	//updateQuery := fmt.Sprintf(`UPDATE User SET Password = '%s' WHERE Username = '%s'`, NewPassword, ActiveUser)
+	_, Updateerr := db.Exec(`UPDATE User SET Password = ? WHERE Username = ?`, NewHashedPassword, ActiveUser)
 
 	//If something went wrong with the password update, panic
 	if Updateerr != nil {
@@ -256,8 +261,8 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 	var communityAlreadyExists int // Checking for the existence of community, don't want duplicates due to confusion
 	var numberOfCommunities int	// keeps track of the number of communities
 
-	CommunityDuplicateCheck :=fmt.Sprintf(`SELECT COUNT(NAME) FROM Communities WHERE NAME = '%s'`, NewCommunityName)
-	err = db.QueryRow(CommunityDuplicateCheck).Scan(&communityAlreadyExists)
+	// CommunityDuplicateCheck :=fmt.Sprintf(`SELECT COUNT(NAME) FROM Communities WHERE NAME = '%s'`, NewCommunityName)
+	err = db.QueryRow(`SELECT COUNT(NAME) FROM Communities WHERE NAME = ?`, NewCommunityName).Scan(&communityAlreadyExists)
 	//Error occured during the check, panic
 	if err != nil {
 		panic(err.Error())
@@ -277,8 +282,8 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 	}
 
 	//Adding the inputted community
-	addCommunityQuery := fmt.Sprintf(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (%d, '%s', '%s', '%s')`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
-	_, Loaderr := db.Exec(addCommunityQuery)
+	//addCommunityQuery := fmt.Sprintf(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (%d, '%s', '%s', '%s')`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
+	_, Loaderr := db.Exec(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (?, ?, ?, ?)`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
 
 	//if an error occured with the community addition, panic
 	if Loaderr != nil {
@@ -300,8 +305,8 @@ func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
 	var DescriptionExists int
 	var numberOfPosts int
 
-	TitleQuery := fmt.Sprintf(`SELECT COUNT(Title) FROM Posts WHERE Title = '%s'`, PostTitle)
-	err = db.QueryRow(TitleQuery).Scan(&TitleExists)
+	// TitleQuery := fmt.Sprintf(`SELECT COUNT(Title) FROM Posts WHERE Title = '%s'`, PostTitle)
+	err = db.QueryRow(`SELECT COUNT(Title) FROM Posts WHERE Title = ?`, PostTitle).Scan(&TitleExists)
 	if err != nil{
 		panic(err.Error())
 	}
@@ -311,8 +316,8 @@ func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
 		return c.Redirect(App.NewPost)
 	}
 
-	DescriptionQuery := fmt.Sprintf(`SELECT COUNT(Text) FROM Posts WHERE Text = '%s'`)
-	err = db.QueryRow(DescriptionQuery).Scan(&DescriptionExists)
+	// DescriptionQuery := fmt.Sprintf(`SELECT COUNT(Text) FROM Posts WHERE Text = '%s'`)
+	err = db.QueryRow(`SELECT COUNT(Text) FROM Posts WHERE Text = ?`, PostContent).Scan(&DescriptionExists)
 	if err != nil{
 		panic(err.Error())
 	}
@@ -328,8 +333,8 @@ func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
 		panic(err.Error())
 	}
 
-	LoadPostQuery := fmt.Sprintf(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (%d, '%s', '%s', %d, '%s')`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
-	_, Loaderr := db.Exec(LoadPostQuery)
+	//LoadPostQuery := fmt.Sprintf(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (%d, '%s', '%s', %d, '%s')`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
+	_, Loaderr := db.Exec(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (?, ?, ?, ?, ?)`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
 	if Loaderr != nil{
 		panic(Loaderr.Error())
 	}
@@ -410,9 +415,9 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 	var err error //Error to deploy
 
 	//Checking for an already existing email
-	sqlStatement := fmt.Sprintf(`SELECT COUNT(Email) FROM User WHERE Email = '%s'`, Email) 
+	//sqlStatement := db.Prepare(`SELECT COUNT(Email) FROM User WHERE Email = '?'`) 
 	var AccountExist int
-	err = db.QueryRow(sqlStatement).Scan(&AccountExist)
+	err = db.QueryRow(`SELECT COUNT(Email) FROM User WHERE Email = ?`, Email).Scan(&AccountExist)
 
 	//If an error occured during the check, Panic
 	if err != nil {
@@ -426,9 +431,9 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 	}
 
 	//Checking for an already existing username
-	UsersqlStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, Username) 
+	//UsersqlStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, Username) 
 	var UserExist int
-	err = db.QueryRow(UsersqlStatement).Scan(&UserExist)
+	err = db.QueryRow(`SELECT COUNT(Username) FROM User WHERE Username = ?`, Username).Scan(&UserExist)
 
 	//If an error occured during the check, Panic
 	if err != nil {
@@ -441,9 +446,15 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 		return false
 	}
 
+	//Hashing the password
+	HashedPassword, Herr := Hash(Password)
+	if Herr != nil{
+		panic(Herr.Error())
+	}
+
 	//Loading the user into the user database table
-	saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES ('%s', '%s', '%s', '%s', 'None')`, Username, Username, Password, Email)
-	_, Loaderr := db.Exec(saveUser)
+	// saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES ('%s', '%s', '%s', '%s', 'None')`, Username, Username, Password, Email)
+	_, Loaderr := db.Exec(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES (?, ?, ?, ?, 'None')`, Username, Username, HashedPassword, Email)
 
 	//Error occured during the load, panic
 	if Loaderr != nil {
@@ -458,22 +469,24 @@ func DBCreateAccount(Username string, Password string, Email string, CurrentSess
 //Attempts to login user. QueryRow throws error if no user + pass combo found
 func DBLogin(Username string, Password string, CurrentSess User) bool {
 	var err error //Error to deploy
-
+	var HashedPassword string
 	//SQL statment to query for the credententials. 
-	sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = '%s'  AND Password = '%s'`, Username, Password)
-	UserSearch := db.QueryRow(sqlStatement)
-	// UserSearch := db.QueryROw
-	//Switching the error and chacking to see whether or not the user exists. 
-	switch err = UserSearch.Scan(&CurrentSess.Username, &CurrentSess.Display_Name, &CurrentSess.Bio); err {
-	case sql.ErrNoRows://User does not exist case, return false
+	//sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = ?  AND Password = '?'`, Username, Password)
+	UserSearch := db.QueryRow(`SELECT Username, Password FROM User WHERE Username = ?`, Username)
+	err = UserSearch.Scan(&CurrentSess.Username, &HashedPassword)
+	if err == sql.ErrNoRows{
 		return false
-	case nil://Err nil, there is indeed a user, return true. 
-		return true
-	default:
+	}else if err == nil{
+		if CheckHash(Password, HashedPassword){
+			return true;
+		}else{
+			return false;
+		}
+	}else{
 		panic(err)
 	}
+	//Switching the error and chacking to see whether or not the user exists. 	
 }
-
 
 func LoadAllCommunities(){
    defer finishPerfMeasure(startPerfMeasure(), "LoadAllCommunities()")
@@ -596,57 +609,12 @@ func LoadAllPosts(){
 
 }
 
-/*
-func LoadAllPosts() revel.Result{
-	//Load the HTML file here
-	path := "app/views/Posts.html"
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
-	if err !=nil{
-		panic(err)
-	}
-
-
-
-
+func Hash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
 }
-*/
-// func InitDB() {
-// 	var err error
-
-// 	db, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/serverstorage")
-
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-
-// 	db.Ping()
-// }
-
-/*
-
-
-//Searches for an email associated with an account and then returns whether one was found or not
-func DBAccRecovery(Email string) string {
-	var err error
-	var AccountExist int
-	var NoAcc = "Account Not Found"
-	var YesAcc = "Recovery email sent!"
-
-	UserSearch, err := db.Query("SELECT COUNT(User_Email) FROM User WHERE User_Email = ? ", &Email)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	UserSearch.Scan(&AccountExist)
-	UserSearch.Close()
-
-	if AccountExist == 0 {
-		return NoAcc
-	} else {
-		return YesAcc
-	}
+func CheckHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
-
-//Searches for an account already reigstered with an email and then will attempt to create account or return an account already exists
-
-*/
+   
