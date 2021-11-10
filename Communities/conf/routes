@@ -25,7 +25,7 @@ POST    /ConstructPost                          App.ConstructPost
 # POST    /ConstructEvent                            App.ConstructEvent
 POST    /ConstructCommunity                     App.ConstructCommunity
 GET     /TermsOfService                         App.TermsOfService
-POST    /LoadAssociatedPosts                    App.LoadAssociatedPosts
+POST    /LoadAssociatedData                     App.LoadAssociatedData
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

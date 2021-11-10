@@ -82,7 +82,8 @@ button:hover {
 
 <div class = "container">
     <div class = "communityDescription">
-        <b>About {{.CurrentCommunity}}</b>
+        <b>About {{.CurrentCommunity}}</b><br>
+        {{template "CommunityDescription.html" .}}
     </div>
 </div>
 
@@ -90,7 +91,6 @@ button:hover {
     <div class = "communityEvents">
         <b>Upcoming events for {{.CurrentCommunity}}</b>
         <a href = "/NewEvent"><button>Make a new Event</button></a> 
-        {{template "CommunityDescription.html" .}}
         <!-- <form action = "/NewEvent" method = "GET">
             <button type="submit">Create a New Event</button><br>
         </form> -->

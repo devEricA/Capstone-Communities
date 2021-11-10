@@ -355,7 +355,8 @@ func (c App) Community(CurrentCommunity string) revel.Result{
 	return c.Render(CurrentCommunity)
 }
 
-func (c App) LoadAssociatedPosts(CurrentCommunity string)revel.Result{
+//Function that populates the Community Page
+func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
 	//Opening the template that is responsible for holding the HTML for all post entries. 
 	ActiveCommunity = CurrentCommunity
 	path := "app/views/CommunityPosts.html"
@@ -412,6 +413,41 @@ func (c App) LoadAssociatedPosts(CurrentCommunity string)revel.Result{
 	if err := sqlToHtml.Flush(); err != nil {
 		panic(err.Error())
 	}
+
+	//Opening the Description file
+	DescPath := "app/views/CommunityDescription.html"
+	Descfile, err := os.OpenFile(DescPath, os.O_RDWR|os.O_CREATE, 0755)
+	if err !=nil{
+		panic(err)
+	}
+
+	//Cleaning the file of any previous descriptions
+	DcleanErr := os.Truncate(DescPath, 0)
+	if DcleanErr != nil{
+		panic(DcleanErr)
+	}
+
+	//Closing the Desc file and opening a buffer
+	defer Descfile.Close()
+	DescToHtml := bufio.NewWriter(Descfile)
+
+	//Querying the description and saving it. 
+	var descriptionContent string
+	Qerr = db.QueryRow(`SELECT Description FROM Communities WHERE Name = ?`, CurrentCommunity).Scan(&descriptionContent)
+	if Qerr != nil{
+		panic(Qerr.Error())
+	}
+
+	//Writing the string to the file
+	_, DescRenderErr := DescToHtml.WriteString(descriptionContent)
+	if DescRenderErr != nil{
+		panic(DescRenderErr.Error())
+	}
+
+	if err := DescToHtml.Flush(); err != nil {
+		panic(err.Error())
+	}
+
 	return c.Redirect(App.Community)
 }
 
@@ -603,7 +639,7 @@ func LoadAllCommunities(){
 			<div class = "communityWindow" %s>
 				<b>%s</b><br/>
 				%s
-				<form action="/LoadAssociatedPosts" method="POST" right="1%%">
+				<form action="/LoadAssociatedData" method="POST" right="1%%">
 					<input type="hidden" name="CurrentCommunity" %s >
 					<button type="submit">Visit Community</button><br>
 				</form>
