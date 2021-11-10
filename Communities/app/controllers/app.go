@@ -288,12 +288,14 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 }
 
 //Function for handling Post Construction
-func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
+func (c App) ConstructPost(PostTitle string, PostContent string, CurrentCommunity string) revel.Result{
 	// Error, Title, Description, and Number of Post Variables
 	var err error
 	var TitleExists int
 	var DescriptionExists int
 	var numberOfPosts int
+	
+	CurrentCommunity = ActiveCommunity
 
 	//Querying to check if there is an existing title: Part of guarding from reposts
 	err = db.QueryRow(`SELECT COUNT(Title) FROM Posts WHERE Title = ?`, PostTitle).Scan(&TitleExists)
@@ -341,8 +343,7 @@ func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
 
 	//Creation of a new post, and redirecting to the homepage
 	c.Flash.Success("Post Created!")
-	LoadAllPosts()
-	return c.Redirect(App.Community)
+	return c.LoadAssociatedData(ActiveCommunity)
 
 }
 
