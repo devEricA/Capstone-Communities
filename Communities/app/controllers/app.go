@@ -690,7 +690,6 @@ func LoadAllPosts(){
 	//For each entry in the post table
 	//Grab the name and description of the post
 	//Then spit HTML into the template in order to render the post entry
-
 	for allPosts.Next(){
 		var Title string
 		var Text string
@@ -699,6 +698,10 @@ func LoadAllPosts(){
 		readerr := allPosts.Scan(&Title, &Text, &CommunityID)
 		if readerr != nil{
 			panic(readerr.Error())
+		}
+		//Trims long posts to a length that fits inside the window
+		if len(Text) > 125 {
+			Text = Text[0:125] + "..."
 		}
 		Cerr := db.QueryRow(`SELECT Name FROM Communities WHERE Community_ID = ?`, CommunityID).Scan(&Community)
 		if Cerr != nil{
