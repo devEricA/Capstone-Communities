@@ -14,7 +14,7 @@ POST    /UpdateUserName                         App.UpdateUserName
 POST    /UpdatePassword                         App.UpdatePassword
 GET     /AccRecovery                            App.AccRecovery
 GET     /CreateCommunity                        App.CreateCommunity
-GET     /Community                              App.Community
+GET     /Community/                             App.Community
 GET     /home                                   App.Home
 POST    /home                                   App.Home
 GET     /NewPost                                App.NewPost
@@ -24,6 +24,8 @@ POST    /CreateAccount                          App.CreateAccount
 POST    /ConstructPost                          App.ConstructPost
 # POST    /ConstructEvent                            App.ConstructEvent
 POST    /ConstructCommunity                     App.ConstructCommunity
+GET     /TermsOfService                         App.TermsOfService
+POST    /LoadAssociatedData                     App.LoadAssociatedData
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

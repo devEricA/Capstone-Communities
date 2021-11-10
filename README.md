@@ -10,8 +10,13 @@ The proposed product is an app that shows local communities within the user’s 
 Our product solves the need by increasing the connectivity within the local scene. It will allow local communities to have a significantly easier time to connect with others of similar interests. By limiting the scope to the local space, we believe it will foster tighter knit communities.
 
 # Instructions for Deployment
-1. If you haven't already, install Go [here](https://golang.org/doc/install)
-2. If you haven't already, install Revel [by following this tutorial](https://revel.github.io/tutorial/gettingstarted.html)
-3. Input <code>export PATH="$PATH:$GOPATH/bin"</code> into a unix terminal
-4. Input <code> revel run Communities/</code>
-5. Open your browser and navigate to localhost:9000.
+1. Install MariaDB: 
+* [Linux Mint & Ubuntu](https://r00t4bl3.com/post/how-to-install-mariadb-10-3-on-linux-mint-19)
+* [Other Systems](https://mariadb.com/downloads/)
+2. Establish your Database server with user = root and password = root.
+3. Run the SQL script in the root of this repo within your database server. 
+4. If you haven't already, install Go [here](https://golang.org/doc/install)
+5. If you haven't already, install Revel [by following this tutorial](https://revel.github.io/tutorial/gettingstarted.html)
+6. Input <code>export PATH="$PATH:$GOPATH/bin"</code> into a unix terminal
+7. Input <code> revel run Communities/</code>
+8. Open your browser and navigate to localhost:9000.

@@ -1,0 +1,54 @@
+{{set . "title" "Terms of Service - Communities"}}
+{{template "header.html" .}}
+{{template "flash.html" .}}
+
+<style>
+button {   
+    background-color: #000000;   
+    width: 15%;  
+     color: rgb(184, 182, 179);   
+     padding: 15px;   
+     margin: 10px 0px;   
+     border: none;   
+     cursor: pointer; 
+       
+}  
+button:hover {   
+          opacity: 0.7;   
+}
+.container {   
+          padding: 25px; 
+          border: 3px solid #f1f1f1;   
+} 
+</style>
+
+<center><h1> Terms of Service </h1></center>
+
+<div class = "container">
+    <text>
+        Welcome to the Communities application.
+    </text></br>
+
+    <text>
+        This application is designed to improve wellbeing by fostering local
+        communities without any outside influence. 
+    </text></br>
+
+    <text>
+        Please note that our application works by taking in your location data. 
+        It will then use that data to display a map of communities near you. 
+    </text></br>
+
+    <text>
+        Per the GDPR standards, we will NOT sell your data. 
+    </text></br>
+
+    <text>
+        By clicking on "I Understand", you consent to us using your location
+        for the application's functionality. 
+    </text></br>
+    <form action="/login" method="GET">
+        <button type="submit">I Understand</button>
+    </form>
+</div>
+{{template "footer.html" .}}
