@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"bufio"
 	"os"
-   "time"
-   "log"
+   //"time"
+   //"log"
    "golang.org/x/crypto/bcrypt"
 )
 
@@ -32,9 +32,9 @@ type User struct {
 var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
-var db *sql.DB
-var logger *log.Logger
-// var dbAsHtml *sql.DB
+var ActiveCommunity string			  //Current community that the user is looking at
+var db *sql.DB						  //Database Pointer
+// var logger *log.Logger				  //Logging pointer
 
 const (
 	addr     = "Lubbock, TX"
@@ -42,35 +42,26 @@ const (
 )
 
 // performance logging helpers
-func startPerfMeasure() time.Time {
-   return time.Now()
-}
+// func startPerfMeasure() time.Time {
+//    return time.Now()
+// }
 
-func finishPerfMeasure(start time.Time, name string) {
-   duration := time.Since(start)
-   logger.Println(name + " execution time: " + fmt.Sprintf("%f", duration.Milliseconds()))
-}
+// func finishPerfMeasure(start time.Time, name string) {
+//    duration := time.Since(start)
+//    logger.Println(name + " execution time: " + fmt.Sprintf("%f", duration.Milliseconds()))
+// }
 
 //By default, Index is the first page that loads in Revel
 //We are using this to open up our database and make queries. 
 func (c App) Index() revel.Result {
-   //Setup logging 
-   performanceLogfile, f_err := os.OpenFile("perf.log",
-      os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-   if f_err != nil {
-      log.Println(f_err)
-   }
-   defer performanceLogfile.Close()
-   logger = log.New(performanceLogfile, "[PERFORMANCE] ", log.LstdFlags)
-
+   	
 	//Error that will display if the database connection fails
 	var err error
 
 	//Opening the connection to the database
 	// maria_pwd := os.Getenv("MYSQL_PWD")
-	// db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
-   	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/serverstorage") // FOR USE WITH LOCAL INSTANCES ONLY
-
+	maria_pwd := "root"
+	db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
 	if err != nil {
@@ -81,9 +72,6 @@ func (c App) Index() revel.Result {
 	//Load the communities nearby
 	LoadAllCommunities()
 	LoadAllPosts()
-
-	// TODO: Find a way to take sql input and output in HTML
-	// dbAsHtml, err = sql.Open("mysql", )
 
 	//Ping the database in order to ensure that it is connected
 	db.Ping()
@@ -299,59 +287,132 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 
 }
 
+//Function for handling Post Construction
 func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
+	// Error, Title, Description, and Number of Post Variables
 	var err error
 	var TitleExists int
 	var DescriptionExists int
 	var numberOfPosts int
 
-	// TitleQuery := fmt.Sprintf(`SELECT COUNT(Title) FROM Posts WHERE Title = '%s'`, PostTitle)
+	//Querying to check if there is an existing title: Part of guarding from reposts
 	err = db.QueryRow(`SELECT COUNT(Title) FROM Posts WHERE Title = ?`, PostTitle).Scan(&TitleExists)
 	if err != nil{
 		panic(err.Error())
 	}
 
+	//If there is already a post with the title, display an error message, and redirect to form. 
 	if TitleExists !=0{
 		c.Flash.Error("A post with that title already exists")
 		return c.Redirect(App.NewPost)
 	}
 
-	// DescriptionQuery := fmt.Sprintf(`SELECT COUNT(Text) FROM Posts WHERE Text = '%s'`)
+	//Querying to check if there is a post with the same description: Part of guarding from reposts 
 	err = db.QueryRow(`SELECT COUNT(Text) FROM Posts WHERE Text = ?`, PostContent).Scan(&DescriptionExists)
 	if err != nil{
 		panic(err.Error())
 	}
 
+	//If there is already a post with the description, display an error message, and redirect to form
 	if DescriptionExists != 0{
 		c.Flash.Error("A post with the description already exists")
 		return c.Redirect(App.NewPost)
 	}
 
+	//Counting how many posts are in the database, and storing that count 
 	PostCountQuery := fmt.Sprintf(`SELECT COUNT(Post_ID) FROM Posts`)
 	err = db.QueryRow(PostCountQuery).Scan(&numberOfPosts)
 	if err != nil{
 		panic(err.Error())
 	}
 
-	//LoadPostQuery := fmt.Sprintf(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (%d, '%s', '%s', %d, '%s')`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
-	_, Loaderr := db.Exec(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (?, ?, ?, ?, ?)`, numberOfPosts, PostTitle, PostContent, 0, ActiveUser)
+	//Grabbing the active community
+	var activeCommunityID int
+	Qerr :=db.QueryRow(`SELECT Community_ID FROM Communities WHERE Name = ?`, ActiveCommunity).Scan(&activeCommunityID)
+	if Qerr != nil{
+		panic(Qerr.Error())
+	}
+
+	//Inserting the post into the post database.
+	_, Loaderr := db.Exec(`INSERT INTO Posts(Post_ID, Title, Text, Community, Username_FID) VALUES (?, ?, ?, ?, ?)`, numberOfPosts, PostTitle, PostContent, activeCommunityID, ActiveUser)
 	if Loaderr != nil{
 		panic(Loaderr.Error())
 	}
 
+	//Creation of a new post, and redirecting to the homepage
 	c.Flash.Success("Post Created!")
 	LoadAllPosts()
-	return c.Redirect(App.Home)
+	return c.Redirect(App.Community)
 
 }
 
 //Renders the Community page
-func (c App) Community() revel.Result{
+func (c App) Community(CurrentCommunity string) revel.Result{
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
-	//TODO: Render Community Name, Posts, Description, and Events
-	return c.Render()
+	CurrentCommunity = ActiveCommunity
+	return c.Render(CurrentCommunity)
+}
+
+func (c App) LoadAssociatedPosts(CurrentCommunity string)revel.Result{
+	//Opening the template that is responsible for holding the HTML for all post entries. 
+	ActiveCommunity = CurrentCommunity
+	path := "app/views/CommunityPosts.html"
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
+	if err !=nil{
+		panic(err)
+	}
+
+	//Clears out any existing entries in the file.
+	//This is important because the database will be experiencing updates (adding & deleting)
+	cleanErr := os.Truncate(path, 0)
+	if cleanErr != nil{
+		panic(cleanErr)
+	}
+
+	//Variable used to seperate post additions
+	var toptrack int = 4
+	var percentage string
+	//Grabbing all of the posts
+	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?)`, CurrentCommunity)
+	if Qerr != nil{
+		panic(err)
+	}
+
+	//Closing the file, opening a new writer
+	defer file.Close()
+	sqlToHtml := bufio.NewWriter(file)
+
+	//For each entry in the post table
+	//Grab the name and description of the post
+	//Then spit HTML into the template in order to render the post entry
+	for allPosts.Next(){
+		var Title string
+		var Text string
+		readerr := allPosts.Scan(&Title, &Text)
+		if readerr != nil{
+			panic(readerr.Error())
+		}
+		percentage = fmt.Sprintf("style= \"top:%d%%;\"", toptrack)
+
+		htmlToRender := fmt.Sprintf(`
+		<div class = "postWindow" %s>
+			<b> %s </b><br/>
+			%s
+		</div>
+		`, percentage, Title, Text)
+		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
+
+		if htmlRenderErr != nil{
+			panic(htmlRenderErr.Error())
+		}
+		toptrack += 11
+	}
+	if err := sqlToHtml.Flush(); err != nil {
+		panic(err.Error())
+	}
+	return c.Redirect(App.Community)
 }
 
 //Renders the New Post page
@@ -370,6 +431,7 @@ func (c App) NewEvent() revel.Result{
 	return c.Render()
 }
 
+//Renders the terms of service page
 func (c App) TermsOfService() revel.Result{
 	return c.Render()	
 }
@@ -492,14 +554,19 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	//Switching the error and chacking to see whether or not the user exists. 	
 }
 
+//Loads all communities from the database into the community window
+//TODO: Also load their positions into the map
 func LoadAllCommunities(){
-   defer finishPerfMeasure(startPerfMeasure(), "LoadAllCommunities()")
+
+    //Opening the template that is responsible for holding the HTML for all community entries. 
 	path := "app/views/Communities.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err !=nil{
 		panic(err)
 	}
 
+	//Clears out any existing entries in the file.
+	//This is important because the database will be experiencing updates (adding & deleting)
 	cleanErr := os.Truncate(path, 0)
 	if cleanErr != nil{
 		panic(cleanErr)
@@ -508,15 +575,20 @@ func LoadAllCommunities(){
 	// Variable used to separate Community positions
 	var topTrack int = 3
 
+	//Grabbing all of the communities
 	allCommunitiesQuery := `SELECT Name, Description FROM Communities`
 	allCommunities, Qerr := db.Query(allCommunitiesQuery)
 	if Qerr != nil{
 		panic(Qerr)
 	}
 
+	//Closing the file, opening a new writer
 	defer file.Close()
 	sqlToHtml := bufio.NewWriter(file)
 
+	//For each entry in the community table
+	//Grab the name and description of the community
+	//Then spit HTML into the template in order to render the community entry
 	for allCommunities.Next(){
 		var Name string
 		var Description string
@@ -525,17 +597,18 @@ func LoadAllCommunities(){
 		if readerr != nil{
 			panic(readerr.Error())
 		}
-		percentage := fmt.Sprintf("style= \"top:%d%%;\"", topTrack)
-		
+		percentage := fmt.Sprintf("style=\"top:%d%%;\"", topTrack)
+		ValueForm := fmt.Sprintf("value=\"%s\"", Name)
 		htmlToRender := fmt.Sprintf(`
 			<div class = "communityWindow" %s>
 				<b>%s</b><br/>
 				%s
-				<form action="/Community" method="GET" right="1%%">
+				<form action="/LoadAssociatedPosts" method="POST" right="1%%">
+					<input type="hidden" name="CurrentCommunity" %s >
 					<button type="submit">Visit Community</button><br>
 				</form>
 		    </div>
-			`,percentage, Name, Description)
+			`,percentage, Name, Description, ValueForm)
 		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
 		if htmlRenderErr != nil{
 			panic(htmlRenderErr.Error())
@@ -548,44 +621,63 @@ func LoadAllCommunities(){
 
 }
 
+//Loads all posts into the Community Window
 func LoadAllPosts(){
-   defer finishPerfMeasure(startPerfMeasure(), "LoadAllPosts()")
+    //Opening the template that is responsible for holding the HTML for all post entries. 
 	path := "app/views/LatestPosts.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err !=nil{
 		panic(err)
 	}
 
+	//Clears out any existing entries in the file.
+	//This is important because the database will be experiencing updates (adding & deleting)
 	cleanErr := os.Truncate(path, 0)
 	if cleanErr != nil{
 		panic(cleanErr)
 	}
+
+	//Variable used to seperate post additions
 	var toptrack int = 4
 
-	allPostsQuery := `SELECT Title, Text FROM Posts`
+	//Grabbing all of the posts
+	allPostsQuery := `SELECT Title, Text, Community FROM Posts`
 	allPosts, Qerr := db.Query(allPostsQuery)
 	if Qerr != nil{
 		panic(err)
 	}
 
+	//Closing the file, opening a new writer
 	defer file.Close()
 	sqlToHtml := bufio.NewWriter(file)
+
+	//For each entry in the post table
+	//Grab the name and description of the post
+	//Then spit HTML into the template in order to render the post entry
 
 	for allPosts.Next(){
 		var Title string
 		var Text string
-		readerr := allPosts.Scan(&Title, &Text)
+		var CommunityID int
+		var Community string
+		readerr := allPosts.Scan(&Title, &Text, &CommunityID)
 		if readerr != nil{
 			panic(readerr.Error())
+		}
+		Cerr := db.QueryRow(`SELECT Name FROM Communities WHERE Community_ID = ?`, CommunityID).Scan(&Community)
+		if Cerr != nil{
+			panic(Cerr.Error())
 		}
 		percentage := fmt.Sprintf("style= \"top:%d%%;\"", toptrack)
 
 		htmlToRender := fmt.Sprintf(`
 		<div class = "postWindow" %s>
 			<b> %s </b><br/>
-			%s
+			%s<br/>
+			<br/>
+			<b>From Community %s</b>
 		</div>
-		`, percentage, Title, Text)
+		`, percentage, Title, Text, Community)
 		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
 
 		if htmlRenderErr != nil{
@@ -600,10 +692,12 @@ func LoadAllPosts(){
 
 }
 
+//Hashing function for passwords
 func Hash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
+//Checking for hash matches
 func CheckHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
