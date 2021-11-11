@@ -341,6 +341,8 @@ func (c App) ConstructPost(PostTitle string, PostContent string, CurrentCommunit
 		panic(Loaderr.Error())
 	}
 
+	LoadAllPosts()
+	
 	//Creation of a new post, and redirecting to the homepage
 	c.Flash.Success("Post Created!")
 	return c.LoadAssociatedData(ActiveCommunity)
@@ -377,7 +379,7 @@ func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
 	var toptrack int = 4
 	var percentage string
 	//Grabbing all of the posts
-	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?)`, CurrentCommunity)
+	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?) ORDER BY Post_ID DESC`, CurrentCommunity)
 	if Qerr != nil{
 		panic(err)
 	}
@@ -678,7 +680,7 @@ func LoadAllPosts(){
 	var toptrack int = 4
 
 	//Grabbing all of the posts
-	allPostsQuery := `SELECT Title, Text, Community FROM Posts`
+	allPostsQuery := `SELECT Title, Text, Community FROM Posts ORDER BY Post_ID DESC`
 	allPosts, Qerr := db.Query(allPostsQuery)
 	if Qerr != nil{
 		panic(err)
