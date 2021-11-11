@@ -31,19 +31,19 @@
             flex-direction: column;
             float:right;
             width: 100%;
-            border-top: 1px solid gray;
+            border-top: 5px solid gray;
     }
     .profileWindow{
             display:flex;
             flex-flow: wrap;
             white-space:wrap;
-            border-bottom: 2px solid grey;
+            border-bottom: 5px solid grey;
     }
     .map{
             margin:auto;
     }
     .latestHead{
-      border-bottom: 2px solid gray;
+      border-bottom: 5px solid gray;
     }
     .break {
         flex-basis: 100%;
@@ -59,7 +59,7 @@
 <div class="flex-container">
   <div class="communitypages">
           <div class = "latestHead">
-            Latest news <br/>from <i><b>{{.LoginUserName}}'s</b></i> communities
+                <i><b> Latest news from {{.LoginUserName}}'s communities</b></i>
           </div>
           {{template "LatestPosts.html" .}}
   </div>
@@ -68,12 +68,12 @@
   </div>
   <div class ="right-hand-side">
           <div class="profileWindow">
-                  Hello {{.LoginUserName}}<div class = "break"></div>
+                  <b>Hello <i>{{.LoginUserName}}</i></b><div class = "break"></div>
                   <a href = "/Profile"><button>My Profile</button></a>
                   <a href = "/CreateCommunity"><button>New Community</button></a>
 
           </div>
-          My Communities
+          <i><b>My Communities</b></i>
           <div class="communities">
 
                   {{template "Communities.html" .}}

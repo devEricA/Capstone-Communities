@@ -1,98 +1,81 @@
 {{set . "title" "Community Page  - Communities"}}
-<!-- {{template "header.html" .}} -->
 
 <style>
-.communityPosts{
-    padding-left: 10px;
-    width: 47%;
-    height: 90%;
-    border: 10px solid black;
-    left: 1%;
-    position: absolute;
-}
-
-.communityDescription{
-    padding-right: 10px;
-    width: 47%;
-    height: 10%;
-    border: 10px solid black;
-    right: 1%;
-    position: absolute;
-}
-
-.communityEvents{
-    padding-right: 10px;
-    width: 47%;
-    height: 79%;
-    border: 10px solid black;
-    right: 1%;
-    top: 18%;
-    position: absolute
-}
-
-.postWindow{
-    width: 96%;
-    height: 10%;
-    border: 10px solid black;
-    position: absolute;
-    top: 4%;
-    left: 1%;
-}
-
-input[type=text]{   
-        width: 50%;   
-        margin: 8px 0;  
-        padding: 12px 20px;   
-        display: inline-block;   
-        border: 2px solid rgb(0, 0, 0);   
-        box-sizing: border-box;   
-}
-button {   
-        background-color: #000000;   
-        width: 25%;  
-        top: 0.5%;
-        color: rgb(184, 182, 179); 
-        border: none;   
-        cursor: pointer; 
-        right: 0px;
-        position: absolute;  
-    }  
-button:hover {   
-        opacity: 0.7;   
-    } 
-</style>
+    .communityPosts{
+            display:flex;
+            flex-direction: column;
+            float:left;
+            width:49%;
+            border: 5px solid gray;
+            height: 100%;
+    }
+    .postWindow{
+            border-bottom: 2px solid gray;
+    }
+    .eventWindow{
+            border-bottom: 2px solid gray;
+    }
+    .right-hand-side{
+            display:flex;
+            flex-direction: column;
+            border: 5px solid grey;
+            width:49%;
+            float: right;
+            height: 100%;
+    }
+    .communityDescription{
+            display:flex;
+            flex-flow: wrap;
+            white-space:wrap;
+            border-bottom: 2px solid grey;
+    }
+    .communityEvents{
+            display:flex;
+            flex-direction: column;
+            float:right;
+            width: 100%;
+            border-top: 5px solid gray;
+    }
+    .break {
+        flex-basis: 100%;
+        height: 0;
+    }
+    .windowHeader{
+        border-bottom: 5px solid gray;
+    }
+    button{
+            background-color: black;
+            margin:auto;
+            color: white;
+    }
+</style>  
 
 <center><h1> {{.CurrentCommunity}} </h1></center> 
 
-<form action = "/home" method = "GET">
+<!-- <form action = "/home" method = "GET">
     <button type="submit" style = "width: 10%; height: 2%;" >Go Back</button>
-</form> 
-
-<div class = "container">
-    <div class = "communityPosts">
-        <b>Latest Posts</b>
-        <a href = "/NewPost"><button>Make a new Post</button></a> 
-        {{template "CommunityPosts.html" .}}
-       
+</form>  -->
+<div class = "communityPosts">
+    <div class = "windowHeader">
+        <i><b>Latest Posts</b></i>
+        <a href = "/NewPost" style="float: right;"><button>Make a new Post</button></a> 
     </div>
+    {{template "CommunityPosts.html" .}}
 </div>
 
-<div class = "container">
+<div class = "right-hand-side">
     <div class = "communityDescription">
-        <b>About {{.CurrentCommunity}}</b><br>
+        <i><b>About {{.CurrentCommunity}}</b></i><br>
         {{template "CommunityDescription.html" .}}
     </div>
-</div>
 
-<div class = "container">
     <div class = "communityEvents">
-        <b>Upcoming events for {{.CurrentCommunity}}</b>
-        <a href = "/NewEvent"><button>Make a new Event</button></a> 
-        <!-- <form action = "/NewEvent" method = "GET">
-            <button type="submit">Create a New Event</button><br>
-        </form> -->
+        <div class = "windowHeader">
+            <i><b>Upcoming events for {{.CurrentCommunity}}</b></i>
+            <a href = "/NewEvent" style="float: right;"><button>Make a new Event</button></a> 
+        </div>
+        
     </div>
 </div>
 
 <!-- {{template "footer.html" .}} -->
-
