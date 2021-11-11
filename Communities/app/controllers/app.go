@@ -288,12 +288,14 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 }
 
 //Function for handling Post Construction
-func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
+func (c App) ConstructPost(PostTitle string, PostContent string, CurrentCommunity string) revel.Result{
 	// Error, Title, Description, and Number of Post Variables
 	var err error
 	var TitleExists int
 	var DescriptionExists int
 	var numberOfPosts int
+	
+	CurrentCommunity = ActiveCommunity
 
 	//Querying to check if there is an existing title: Part of guarding from reposts
 	err = db.QueryRow(`SELECT COUNT(Title) FROM Posts WHERE Title = ?`, PostTitle).Scan(&TitleExists)
@@ -339,10 +341,11 @@ func (c App) ConstructPost(PostTitle string, PostContent string) revel.Result{
 		panic(Loaderr.Error())
 	}
 
+	LoadAllPosts()
+	
 	//Creation of a new post, and redirecting to the homepage
 	c.Flash.Success("Post Created!")
-	LoadAllPosts()
-	return c.Redirect(App.Community)
+	return c.LoadAssociatedData(ActiveCommunity)
 
 }
 
@@ -376,7 +379,7 @@ func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
 	var toptrack int = 4
 	var percentage string
 	//Grabbing all of the posts
-	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?)`, CurrentCommunity)
+	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?) ORDER BY Post_ID DESC`, CurrentCommunity)
 	if Qerr != nil{
 		panic(err)
 	}
@@ -677,7 +680,7 @@ func LoadAllPosts(){
 	var toptrack int = 4
 
 	//Grabbing all of the posts
-	allPostsQuery := `SELECT Title, Text, Community FROM Posts`
+	allPostsQuery := `SELECT Title, Text, Community FROM Posts ORDER BY Post_ID DESC`
 	allPosts, Qerr := db.Query(allPostsQuery)
 	if Qerr != nil{
 		panic(err)
@@ -690,7 +693,6 @@ func LoadAllPosts(){
 	//For each entry in the post table
 	//Grab the name and description of the post
 	//Then spit HTML into the template in order to render the post entry
-
 	for allPosts.Next(){
 		var Title string
 		var Text string
@@ -699,6 +701,10 @@ func LoadAllPosts(){
 		readerr := allPosts.Scan(&Title, &Text, &CommunityID)
 		if readerr != nil{
 			panic(readerr.Error())
+		}
+		//Trims long posts to a length that fits inside the window
+		if len(Text) > 125 {
+			Text = Text[0:125] + "..."
 		}
 		Cerr := db.QueryRow(`SELECT Name FROM Communities WHERE Community_ID = ?`, CommunityID).Scan(&Community)
 		if Cerr != nil{
