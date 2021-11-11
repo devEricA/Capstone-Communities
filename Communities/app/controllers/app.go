@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"strconv"
    //"time"
    //"log"
    "golang.org/x/crypto/bcrypt"
@@ -38,7 +39,7 @@ var db *sql.DB						  //Database Pointer
 
 const (
 	addr     = "Lubbock, TX"
-	lat, lng = 33.563521, -101.879336
+	lat, lng = "33.563521", "-101.879336"
 )
 
 // performance logging helpers
@@ -125,9 +126,18 @@ func (c App) Home(LoginUserName string) revel.Result{
 		return c.Redirect(App.Login);
 	}
 	LoginUserName = ActiveUser
-	//Create the map for the user to explore
-	createMap(lat, lng)
 
+	LatValue, Laerr := strconv.ParseFloat(lat,64)
+	if Laerr != nil{
+		panic(Laerr.Error())
+	}
+	LongValue, Loerr := strconv.ParseFloat(lng,64)
+	if Loerr != nil{
+		panic(Loerr.Error())
+	}
+	
+	//Create the map for the user to explore
+	createMap(LatValue, LongValue)
 	//Load the communities nearby
 	LoadAllCommunities()
 	LoadAllPosts()
@@ -271,7 +281,7 @@ func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription st
 
 	//Adding the inputted community
 	//addCommunityQuery := fmt.Sprintf(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (%d, '%s', '%s', '%s')`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
-	_, Loaderr := db.Exec(`INSERT INTO Communities(Community_ID, Name, Description, City) VALUES (?, ?, ?, ?)`, numberOfCommunities, NewCommunityName, CommunityDescription, addr)
+	_, Loaderr := db.Exec(`INSERT INTO Communities(Community_ID, Name, Description, City, Longitude, Latitude) VALUES (?, ?, ?, ?, ?, ?)`, numberOfCommunities, NewCommunityName, CommunityDescription, addr, lng, lat)
 
 	//if an error occured with the community addition, panic
 	if Loaderr != nil {
