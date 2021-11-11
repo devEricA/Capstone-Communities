@@ -46,3 +46,29 @@ CREATE TABLE Sub_List (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE = InnoDB;
+
+CREATE TABLE Ads (
+        Ad_ID BIGINT NOT NULL PRIMARY KEY,
+        Title VARCHAR(50) NOT NULL,
+        Text VARCHAR(600),
+        Ad_City VARCHAR(50) NOT NULL
+) ENGINE = InnoDB;
+
+
+CREATE TABLE Events (
+        Event_ID BIGINT NOT NULL PRIMARY KEY,
+        Event_Name VARCHAR(50) NOT NULL,
+        Date VARCHAR(15) NOT NULL, 
+        Time VARCHAR(15) NOT NULL,
+        Event_Location VARCHAR(600),
+        What VARCHAR(600),
+        Home_Community BIGINT NOT NULL,
+        CONSTRAINT `Home_Community`
+                FOREIGN KEY (Home_Community) REFERENCES Communities (Community_ID)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+
+ALTER TABLE Communities ADD Longitude Float(10,10) SIGNED AFTER City;
+ALTER TABLE Communities ADD Latitude Float(10,10) SIGNED AFTER Longitude;
