@@ -34,6 +34,7 @@ var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
 var ActiveUser string				  //Current user that is using the application
 var ActiveCommunity string			  //Current community that the user is looking at
+var ActiveComDescription string 	  //Description of the community that the user is looking at
 var db *sql.DB						  //Database Pointer
 // var logger *log.Logger				  //Logging pointer
 
@@ -355,43 +356,42 @@ func (c App) ConstructPost(PostTitle string, PostContent string, CurrentCommunit
 	
 	//Creation of a new post, and redirecting to the homepage
 	c.Flash.Success("Post Created!")
-	return c.LoadAssociatedData(ActiveCommunity)
+	return c.LoadAssociatedData(ActiveCommunity, ActiveComDescription)
 
 }
 
 //Renders the Community page
-func (c App) Community(CurrentCommunity string) revel.Result{
+func (c App) Community(CurrentCommunity string, CurrentCommunityDescription string) revel.Result{
 	if(!LoggedIn){
 		return c.Redirect(App.Login);
 	}
 	CurrentCommunity = ActiveCommunity
-	return c.Render(CurrentCommunity)
+	CurrentCommunityDescription = ActiveComDescription
+	return c.Render(CurrentCommunity, CurrentCommunityDescription)
 }
 
 //Function that populates the Community Page
-func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
+func (c App) LoadAssociatedData(CurrentCommunity string, CurrentCommunityDescription string)revel.Result{
 	//Opening the template that is responsible for holding the HTML for all post entries. 
 	ActiveCommunity = CurrentCommunity
+	ActiveComDescription = CurrentCommunityDescription
 	path := "app/views/CommunityPosts.html"
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err !=nil{
-		panic(err)
+		panic(err.Error())
 	}
 
 	//Clears out any existing entries in the file.
 	//This is important because the database will be experiencing updates (adding & deleting)
 	cleanErr := os.Truncate(path, 0)
 	if cleanErr != nil{
-		panic(cleanErr)
+		panic(cleanErr.Error())
 	}
 
-	//Variable used to seperate post additions
-	var toptrack int = 4
-	var percentage string
 	//Grabbing all of the posts
 	allPosts, Qerr := db.Query(`SELECT Title, Text FROM Posts WHERE Community = (SELECT Community_ID FROM Communities WHERE Name = ?) ORDER BY Post_ID DESC`, CurrentCommunity)
 	if Qerr != nil{
-		panic(err)
+		panic(Qerr.Error())
 	}
 
 	//Closing the file, opening a new writer
@@ -407,21 +407,19 @@ func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
 		readerr := allPosts.Scan(&Title, &Text)
 		if readerr != nil{
 			panic(readerr.Error())
-		}
-		percentage = fmt.Sprintf("style= \"top:%d%%;\"", toptrack)
+		}	
 
 		htmlToRender := fmt.Sprintf(`
-		<div class = "postWindow" %s>
+		<div class = "postWindow">
 			<b> %s </b><br/>
 			%s
 		</div>
-		`, percentage, Title, Text)
+		`,Title, Text)
 		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
 
 		if htmlRenderErr != nil{
 			panic(htmlRenderErr.Error())
 		}
-		toptrack += 11
 	}
 	if err := sqlToHtml.Flush(); err != nil {
 		panic(err.Error())
@@ -457,7 +455,71 @@ func (c App) LoadAssociatedData(CurrentCommunity string)revel.Result{
 		panic(DescRenderErr.Error())
 	}
 
-	if err := DescToHtml.Flush(); err != nil {
+	if FDerr := DescToHtml.Flush(); FDerr != nil {
+		panic(FDerr.Error())
+	}
+
+	//Opening the Events file
+	EventPath := "app/views/CommunityEvents.html"
+	Eventfile, EPerr := os.OpenFile(EventPath, os.O_RDWR|os.O_CREATE, 0755)
+	if EPerr !=nil{
+		panic(EPerr.Error())
+	}
+
+	//Cleaning the file of any previous descriptions
+	EcleanErr := os.Truncate(DescPath, 0)
+	if EcleanErr != nil{
+		panic(EcleanErr.Error())
+	}
+
+	//Querying all of the events
+	allEvents, QEerr := db.Query(`SELECT Event_Name, Date, Time, Event_Location, What FROM Events WHERE Home_Community = (SELECT Community_ID FROM Communities WHERE Name = ?) ORDER BY Event_ID DESC`, CurrentCommunity)
+	if QEerr != nil{
+		panic(QEerr.Error())
+	}
+
+	//Closing the file, opening a new writer
+	defer file.Close()
+	EventToHtml := bufio.NewWriter(Eventfile)
+
+	//For each entry in the event table
+	//Grab all of the details in the event table
+	//Then spit HTML into the template in order to render the post entry
+	for allEvents.Next(){
+		var EventName string
+		var Date string
+		var Time string
+		var Location string
+		var Details string
+		readerr := allEvents.Scan(&EventName, &Date, &Time, &Location, &Details)
+		if readerr != nil{
+			panic(readerr.Error())
+		}
+
+		htmlToRender := fmt.Sprintf(`
+		<div class = "eventWindow">
+			<b> %s </b><br/>
+			<i>Date : </i>
+			%s
+			<br/>
+			<i>Time : </i>
+			%s
+			<br/>
+			<i>Location : </i>
+			%s
+			<br/>
+			<br/>
+			%s
+		</div>
+		`, EventName, Date, Time, Location, Details)
+		_, htmlRenderErr := EventToHtml.WriteString(htmlToRender)
+
+		if htmlRenderErr != nil{
+			panic(htmlRenderErr.Error())
+		}
+	}
+
+	if err := EventToHtml.Flush(); err != nil {
 		panic(err.Error())
 	}
 
@@ -478,6 +540,64 @@ func (c App) NewEvent() revel.Result{
 		return c.Redirect(App.Login);
 	}
 	return c.Render()
+}
+
+func (c App) ConstructEvent(EventTitle string, EventDay string, EventTime string, EventLocation string, EventContent string) revel.Result{
+	// Error, Title, Description, and Number of Event Variables
+	var err error
+	var TitleExists int
+	var DescriptionExists int
+	var numberOfEvents int
+
+	//Querying to check if there is an existing title: Part of guarding from reposts
+	err = db.QueryRow(`SELECT COUNT(Event_Name) FROM Events WHERE Event_Name = ?`, EventTitle).Scan(&TitleExists)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	//If there is already an event with the title, display an error message, and redirect to form. 
+	if TitleExists !=0{
+		c.Flash.Error("An event with that title already exists")
+		return c.Redirect(App.NewPost)
+	}
+
+	//Querying to check if there is a post with the same description: Part of guarding from reposts 
+	err = db.QueryRow(`SELECT COUNT(What) FROM Events WHERE What = ?`, EventContent).Scan(&DescriptionExists)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	//If there is already a post with the description, display an error message, and redirect to form
+	if DescriptionExists != 0{
+		c.Flash.Error("An event with the description already exists")
+		return c.Redirect(App.NewPost)
+	}
+
+	//Counting how many posts are in the database, and storing that count 
+	EventCountQuery := fmt.Sprintf(`SELECT COUNT(Event_ID) FROM Events`)
+	err = db.QueryRow(EventCountQuery).Scan(&numberOfEvents)
+	if err != nil{
+		panic(err.Error())
+	}
+
+	//Grabbing the active community
+	var activeCommunityID int
+	Qerr :=db.QueryRow(`SELECT Community_ID FROM Communities WHERE Name = ?`, ActiveCommunity).Scan(&activeCommunityID)
+	if Qerr != nil{
+		panic(Qerr.Error())
+	}
+
+	//Inserting the post into the post database.
+	_, Loaderr := db.Exec(`INSERT INTO Events(Event_ID, Event_Name, Date, Time, Event_Location, What, Home_Community) VALUES (?, ?, ?, ?, ?, ?, ?)`, numberOfEvents, EventTitle, EventDay, EventTime, EventLocation, EventContent, activeCommunityID)
+	if Loaderr != nil{
+		panic(Loaderr.Error())
+	}
+
+	//Creation of a new post, and redirecting to the homepage
+	c.Flash.Success("Event Created!")
+	return c.LoadAssociatedData(ActiveCommunity, ActiveComDescription)
+
+
 }
 
 //Renders the terms of service page
@@ -622,7 +742,6 @@ func LoadAllCommunities(){
 	}
 
 	// Variable used to separate Community positions
-	var topTrack int = 3
 
 	//Grabbing all of the communities
 	allCommunitiesQuery := `SELECT Name, Description FROM Communities`
@@ -646,23 +765,23 @@ func LoadAllCommunities(){
 		if readerr != nil{
 			panic(readerr.Error())
 		}
-		percentage := fmt.Sprintf("style=\"top:%d%%;\"", topTrack)
-		ValueForm := fmt.Sprintf("value=\"%s\"", Name)
+		ValueName := fmt.Sprintf("value=\"%s\"", Name)
+		ValueDesc := fmt.Sprintf("value=\"%s\"", Description)
 		htmlToRender := fmt.Sprintf(`
-			<div class = "communityWindow" %s>
+			<div class = "communityWindow">
 				<b>%s</b><br/>
 				%s
 				<form action="/LoadAssociatedData" method="POST" right="1%%">
 					<input type="hidden" name="CurrentCommunity" %s >
+					<input type="hidden" name="CurrentCommunityDescription" %s>
 					<button type="submit">Visit Community</button><br>
 				</form>
 		    </div>
-			`,percentage, Name, Description, ValueForm)
+			`, Name, Description, ValueName, ValueDesc)
 		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
 		if htmlRenderErr != nil{
 			panic(htmlRenderErr.Error())
 		}
-		topTrack += 9
 	}
 	if err := sqlToHtml.Flush(); err != nil {
         panic(err.Error())
@@ -685,9 +804,6 @@ func LoadAllPosts(){
 	if cleanErr != nil{
 		panic(cleanErr)
 	}
-
-	//Variable used to seperate post additions
-	var toptrack int = 4
 
 	//Grabbing all of the posts
 	allPostsQuery := `SELECT Title, Text, Community FROM Posts ORDER BY Post_ID DESC`
@@ -720,22 +836,20 @@ func LoadAllPosts(){
 		if Cerr != nil{
 			panic(Cerr.Error())
 		}
-		percentage := fmt.Sprintf("style= \"top:%d%%;\"", toptrack)
 
 		htmlToRender := fmt.Sprintf(`
-		<div class = "postWindow" %s>
+		<div class = "postWindow">
 			<b> %s </b><br/>
 			%s<br/>
 			<br/>
 			<b>From Community %s</b>
 		</div>
-		`, percentage, Title, Text, Community)
+		`, Title, Text, Community)
 		_, htmlRenderErr := sqlToHtml.WriteString(htmlToRender)
 
 		if htmlRenderErr != nil{
 			panic(htmlRenderErr.Error())
 		}
-		toptrack += 11
 	}
 
 	if err := sqlToHtml.Flush(); err != nil {

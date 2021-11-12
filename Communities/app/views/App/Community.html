@@ -23,18 +23,11 @@
             float: right;
             height: 100%;
     }
-    .communityDescription{
-            display:flex;
-            flex-flow: wrap;
-            white-space:wrap;
-            border-bottom: 2px solid grey;
-    }
     .communityEvents{
             display:flex;
             flex-direction: column;
             float:right;
             width: 100%;
-            border-top: 5px solid gray;
     }
     .break {
         flex-basis: 100%;
@@ -51,10 +44,11 @@
 </style>  
 
 <center><h1> {{.CurrentCommunity}} </h1></center> 
+<center> {{.CurrentCommunityDescription}} </center>
 
-<!-- <form action = "/home" method = "GET">
+<form action = "/home" method = "GET">
     <button type="submit" style = "width: 10%; height: 2%;" >Go Back</button>
-</form>  -->
+</form> 
 <div class = "communityPosts">
     <div class = "windowHeader">
         <i><b>Latest Posts</b></i>
@@ -64,16 +58,12 @@
 </div>
 
 <div class = "right-hand-side">
-    <div class = "communityDescription">
-        <i><b>About {{.CurrentCommunity}}</b></i><br>
-        {{template "CommunityDescription.html" .}}
-    </div>
-
     <div class = "communityEvents">
         <div class = "windowHeader">
             <i><b>Upcoming events for {{.CurrentCommunity}}</b></i>
             <a href = "/NewEvent" style="float: right;"><button>Make a new Event</button></a> 
         </div>
+        {{template "CommunityEvents.html" .}}
         
     </div>
 </div>
