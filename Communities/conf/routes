@@ -22,7 +22,7 @@ GET     /NewEvent                               App.NewEvent
 POST    /LogValidate                            App.LogValidate   
 POST    /CreateAccount                          App.CreateAccount
 POST    /ConstructPost                          App.ConstructPost
-# POST    /ConstructEvent                            App.ConstructEvent
+POST    /ConstructEvent                            App.ConstructEvent
 POST    /ConstructCommunity                     App.ConstructCommunity
 GET     /TermsOfService                         App.TermsOfService
 POST    /LoadAssociatedData                     App.LoadAssociatedData
