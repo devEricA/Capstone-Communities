@@ -432,6 +432,14 @@ func (c App) LoadAssociatedData(CurrentCommunity string, CurrentCommunityDescrip
 		panic(EPerr.Error())
 	}
 
+	//Clears out any existing entries in the file.
+	//This is important because the database will be experiencing updates (adding & deleting)
+	EcleanErr := os.Truncate(EventPath, 0)
+	if EcleanErr != nil{
+		panic(EcleanErr.Error())
+	}
+
+
 	//Querying all of the events
 	allEvents, QEerr := db.Query(`SELECT Event_Name, Date, Time, Event_Location, What FROM Events WHERE Home_Community = (SELECT Community_ID FROM Communities WHERE Name = ?) ORDER BY Event_ID DESC`, CurrentCommunity)
 	if QEerr != nil{
