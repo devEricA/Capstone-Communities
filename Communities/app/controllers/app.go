@@ -425,51 +425,11 @@ func (c App) LoadAssociatedData(CurrentCommunity string, CurrentCommunityDescrip
 		panic(err.Error())
 	}
 
-	//Opening the Description file
-	DescPath := "app/views/CommunityDescription.html"
-	Descfile, err := os.OpenFile(DescPath, os.O_RDWR|os.O_CREATE, 0755)
-	if err !=nil{
-		panic(err)
-	}
-
-	//Cleaning the file of any previous descriptions
-	DcleanErr := os.Truncate(DescPath, 0)
-	if DcleanErr != nil{
-		panic(DcleanErr)
-	}
-
-	//Closing the Desc file and opening a buffer
-	defer Descfile.Close()
-	DescToHtml := bufio.NewWriter(Descfile)
-
-	//Querying the description and saving it. 
-	var descriptionContent string
-	Qerr = db.QueryRow(`SELECT Description FROM Communities WHERE Name = ?`, CurrentCommunity).Scan(&descriptionContent)
-	if Qerr != nil{
-		panic(Qerr.Error())
-	}
-
-	//Writing the string to the file
-	_, DescRenderErr := DescToHtml.WriteString(descriptionContent)
-	if DescRenderErr != nil{
-		panic(DescRenderErr.Error())
-	}
-
-	if FDerr := DescToHtml.Flush(); FDerr != nil {
-		panic(FDerr.Error())
-	}
-
 	//Opening the Events file
 	EventPath := "app/views/CommunityEvents.html"
 	Eventfile, EPerr := os.OpenFile(EventPath, os.O_RDWR|os.O_CREATE, 0755)
 	if EPerr !=nil{
 		panic(EPerr.Error())
-	}
-
-	//Cleaning the file of any previous descriptions
-	EcleanErr := os.Truncate(DescPath, 0)
-	if EcleanErr != nil{
-		panic(EcleanErr.Error())
 	}
 
 	//Querying all of the events
