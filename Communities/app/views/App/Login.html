@@ -1,7 +1,16 @@
+<!--
+    Login page.
+    This page is responsible for displaying the page
+    that allows users to login
+-->
 {{set . "title" "Login - Communities"}}
 {{template "header.html" .}}
+<!--Used to display errors-->
 {{template "flash.html" .}}
 
+<!--
+    Defining setups for inputs, buttonsm and displays
+-->
 <head>  
   <meta name="viewport" content="width=device-width, initial-scale=1">  
   <style>   
@@ -41,15 +50,22 @@
   </style>   
   </head>    
   <body>    
+      <!--Header for Communities page-->
       <center> <h1> Welcome to Communities! </h1> </center>   
+      <!--
+          Form that is responsible for handling logins
+      -->
       <form action = "/LogValidate" method = "POST">  
           <div class="container">   
+              <!--Username Input-->
               <label>Username</label><br>   
-              <input type="text" placeholder="Enter Username" name="LoginUserName" required><br>
+              <input type="text" placeholder="Enter Username" name="LoginUserName" maxlength="24"required><br>
+              <!--Password Input-->
               <label>Password</label><br>
               <input type="password" placeholder="Enter Password" name="LoginPassword" required><br>
+              <!--Button to submit all inputted data-->
               <button type="submit">Login</button><br>
-              <input type="checkbox" checked="checked"> Remember me  <br> 
+              <!--Links to forgot passsword and account recovery-->
               Forgot <a href="/AccRecovery"> password? </a><br>
               Create an <a href="/AccountCreation"> account. </a>
           </div>   

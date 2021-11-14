@@ -1,13 +1,29 @@
+<!--
+        Community Page
+        This page is responsible for displaying 
+        all of the information that is associated
+        with the community that the user is viewing
+-->
+
+<!--Defining the title-->
 {{set . "title" "Community Page  - Communities"}}
 
+<!--
+    Defining setups for inputs, buttons, containers,
+    and displays for components
+-->
 <style>
+    .flex-container{
+            display:flex;
+            flex-direction: row;
+            height:90%
+    }
     .communityPosts{
             display:flex;
             flex-direction: column;
             float:left;
-            width:49%;
-            border: 5px solid gray;
-            height: 100%;
+            width:100%;
+            overflow: auto;
     }
     .postWindow{
             border-bottom: 2px solid gray;
@@ -15,19 +31,24 @@
     .eventWindow{
             border-bottom: 2px solid gray;
     }
+    .left-hand-side{
+            display:flex;
+            flex-direction: column;
+            width: 50%;
+            border: 5px solid gray;
+    }
     .right-hand-side{
             display:flex;
             flex-direction: column;
             border: 5px solid grey;
-            width:49%;
-            float: right;
-            height: 100%;
+            width:50%;
     }
     .communityEvents{
             display:flex;
             flex-direction: column;
             float:right;
             width: 100%;
+            overflow: auto;
     }
     .break {
         flex-basis: 100%;
@@ -35,36 +56,56 @@
     }
     .windowHeader{
         border-bottom: 5px solid gray;
+        position: -webkit-sticky;
+        position: sticky;
+        background-color: white;
+	top :0;
     }
     button{
             background-color: black;
             margin:auto;
             color: white;
+            cursor: pointer;
+    }
+    button:hover{
+            opacity:0.7;
     }
 </style>  
 
+<!--Header Description for the Community that the user is looking at-->
 <center><h1> {{.CurrentCommunity}} </h1>{{.CurrentCommunityDescription}}</center> 
 
+<!--Go Back button directing to home-->
 <form action = "/home" method = "GET">
-    <button type="submit" style = "width: 10%; height: 2%;" >Go Back</button>
+        <button type="submit" style = "width: 10%; height: 2%;" >Go Back</button>
 </form> 
-<div class = "communityPosts">
+
+<!--Container for both componets of the page-->
+<div class = "flex-container">
+ <!--Left Container for the Posts of the community-->
+ <div class = "left-hand-side">
+    <!--Header for the Post Window-->
     <div class = "windowHeader">
         <i><b>Latest Posts</b></i>
         <a href = "/NewPost" style="float: right;"><button>Make a new Post</button></a> 
     </div>
-    {{template "CommunityPosts.html" .}}
-</div>
-
-<div class = "right-hand-side">
-    <div class = "communityEvents">
-        <div class = "windowHeader">
-            <i><b>Upcoming events for {{.CurrentCommunity}}</b></i>
-            <a href = "/NewEvent" style="float: right;"><button>Make a new Event</button></a> 
-        </div>
-        {{template "CommunityEvents.html" .}}
-        
+    <div class = "communityPosts">
+     <!--Inclusion of the template that holds all of the rendered posts-->
+     {{template "CommunityPosts.html" .}}
     </div>
+ </div>
+ <!-- Right Container for the events of the community -->
+ <div class = "right-hand-side">
+    <!--Header for the Event Window-->
+    <div class = "windowHeader">
+        <i><b>Upcoming events for {{.CurrentCommunity}}</b></i>
+        <a href = "/NewEvent" style="float: right;"><button>Make a new Event</button></a> 
+    </div>
+    <div class = "communityEvents">
+        <!--Inclusion of the template that holds all of the rendered events-->
+        {{template "CommunityEvents.html" .}}
+    </div>
+</div>
 </div>
 
 <!-- {{template "footer.html" .}} -->
