@@ -1,24 +1,38 @@
+<!--
+        Home page of the community application
+        Responsible for displaying posts and communities
+        along with the map
+-->
 {{set . "title" "Home - Communities"}}
-{{template "flash.html" .}}
 
+<!--
+    Defining setups for inputs, buttons, containers,
+    and displays for components
+-->
 <style>
     .flex-container{
             display:flex;
             flex-direction: row;
+            height:100%
     }
     .communityWindow{
             border-bottom: 2px solid gray;
-
     }
     .postWindow{
             border-bottom: 2px solid gray;
     }
-    .communitypages{
+    .left-hand-side{
             display:flex;
             flex-direction: column;
-            float:left;
-            width:50%;
+            width: 50%;
             border: 5px solid gray;
+    }
+    .postList{
+            display:flex;
+            flex-direction: column;
+            float:right;
+            width: 100%;
+            overflow: auto;
     }
     .right-hand-side{
             display:flex;
@@ -31,19 +45,28 @@
             flex-direction: column;
             float:right;
             width: 100%;
-            border-top: 5px solid gray;
+            overflow: auto;
+    }
+    .communityHeader{
+            border-bottom: 5px solid gray;
     }
     .profileWindow{
             display:flex;
             flex-flow: wrap;
             white-space:wrap;
             border-bottom: 5px solid grey;
+            position: -webkit-sticky;
+            position: sticky;
+            background-color: white;
     }
     .map{
             margin:auto;
     }
-    .latestHead{
-      border-bottom: 5px solid gray;
+    .WindowHead{
+            border-bottom: 5px solid gray;
+            position: -webkit-sticky;
+            position: sticky;
+            background-color: white;
     }
     .break {
         flex-basis: 100%;
@@ -53,29 +76,45 @@
             background-color: black;
             margin:auto;
             color: white;
+            cursor: pointer;
+    }
+    button:hover{
+            opacity:0.7;
     }
 </style>    
   
+<!--Container that holds all of the componets for the application-->
 <div class="flex-container">
-  <div class="communitypages">
-          <div class = "latestHead">
-                <i><b> Latest news from {{.LoginUserName}}'s communities</b></i>
-          </div>
-          {{template "LatestPosts.html" .}}
+
+  <!--Left hand side is responsible for displaying all of the latest posts from the community-->
+  <div class="left-hand-side">
+        <div class = "WindowHead">
+         <i><b> Latest news from {{.LoginUserName}}'s communities</b></i>
+        </div>
+        <div class = "postList">
+         <!--Template responsible for displaying the latest posts-->
+         {{template "LatestPosts.html" .}}
+        </div>
   </div>
+
+  <!--Display of the map-->
   <div class="map">
-          <img src="/public/img/my-map.png" height = 90%>
+          <img src="/public/img/my-map.png" height = "100%">
   </div>
-  <div class ="right-hand-side">
-          <div class="profileWindow">
-                  <b>Hello <i>{{.LoginUserName}}</i></b><div class = "break"></div>
-                  <a href = "/Profile"><button>My Profile</button></a>
-                  <a href = "/CreateCommunity"><button>New Community</button></a>
+  <!--Right hand side is responsible for displaying all of the communities, along with profile information-->
+  <div class = "right-hand-side">
+        <div class="profileWindow">
+                <b>Hello <i>{{.LoginUserName}}</i></b><div class = "break"></div>
+                <a href = "/Profile"><button>My Profile</button></a>
+                <a href = "/CreateCommunity"><button>New Community</button></a>
 
-          </div>
-          <i><b>My Communities</b></i>
-          <div class="communities">
-
-                  {{template "Communities.html" .}}
-          </div>
+        </div>
+        <div class = "WindowHead">
+        <i><b>My Communities</b></i>
+        </div>
+        <div class="communities">
+                <!--Template responsible for displaying all of the latest communities-->
+                {{template "Communities.html" .}}
+        </div>
+  </div>
 </div>

@@ -1,9 +1,18 @@
+<!-- 
+    Account Creation Page 
+    Page with form responsible for creating accounts
+-->
 {{set . "title" "Account Creation - Communities"}}
+
+<!--Loading up some templates-->
 {{template "header.html" .}}
 {{template "flash.html" .}}
 
+<!--
+    Defining setups for inputs, buttons
+-->
 <style>
-    input[type=text], input[type=password] {   
+    input[type=text], input[type=password], input[type=email]  {   
           width: 50%;   
           margin: 8px 0;  
           padding: 12px 20px;   
@@ -31,21 +40,28 @@
       }   
 </style>
 
+
+<!--Header for the Page-->
 <center><h1> Create an Account </h1></center>
 
+<!--
+    Form responsible for handling Account Creations
+    Input a username, password, and email address
+-->
 <div class = "container">
     <form action="/CreateAccount" name="newAccountData" method="POST">
         <label>Enter your Email address</label><br>
-        <input type="text" name="NewEmail"/><br>
+        <input type="email" name="NewEmail" maxlength = "50" required/><br>
         <label>Enter a Username</label><br>
-        <input type="text" name="NewUserName"/><br>
+        <input type="text" name="NewUserName" maxlength = "24" required/><br>
         <label>Enter a Password</label><br>
-        <input type="password" name="NewPassword"/><br>
+        <input type="password" name="NewPassword" required/><br>
         <label>Confirm your Password</label><br>
-        <input type="password" name="NewPasswordConfirmation"/><br>
+        <input type="password" name="NewPasswordConfirmation" required/><br>
         <button type="submit">Create Account</button>   
     </form>
 
+    <!--Submit button after inputting the form-->
     <form action="/login" method="GET">
         <button type="submit">Go Back</button>
     </form>

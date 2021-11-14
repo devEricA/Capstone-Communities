@@ -1,7 +1,14 @@
+<!--
+    This page is responsible for 
+    handling the creation of brand new posts
+-->
 {{set . "title" "New Post  - Communities"}}
 {{template "header.html" .}}
 {{template "flash.html" .}}
 
+<!--
+    Defining setups for inputs, buttons
+-->
 <style>
 input[type=text]{   
         width: 50%;   
@@ -31,15 +38,20 @@ button:hover {
 
 <center><h1> New Post </h1></center> 
 
+<!--Container for the form responsible for creating the post-->
 <div class = "container">
     <form action="/ConstructPost" method = "POST">
+        <!--Prompting for the title of the post-->
         <label>What do you want to title your post?</label><br>
-        <input type="text" name="PostTitle"/><br>
+        <input type="text" name="PostTitle" maxlength="50" required/><br>
+        <!--Prompting for the content of the post-->
         <label>What do you want to talk about in this post?</label><br>
-        <input type="text" name="PostContent" style = "height: 70%;"/><br>
+        <input type="text" name="PostContent" maxlength="500"/><br>
+        <!--Submission of the post creation-->
         <button type="submit">Create Post</button>   
     </form>
 
+    <!--Cancellation button-->
     <form action="/Community" method="GET">
         <button type="submit">Cancel</button>
     </form>

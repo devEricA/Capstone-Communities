@@ -1,7 +1,21 @@
+<!--
+    Community Creation Page
+    This page is responsible for
+    displaying the form that is 
+    responsible for constructing communities
+-->
+
+<!--Setting title and including default templates-->
 {{set . "title" "New Community  - Communities"}}
 {{template "header.html" .}}
+
+<!--Template responsible for displaying error and success messages-->
 {{template "flash.html" .}}
 
+<!--
+    Defining setups for inputs, buttons
+    and displays
+-->
 <style>
 .map{
     position: absolute;
@@ -38,25 +52,29 @@ button:hover {
     } 
 </style>
 
+<!--Display for the map-->
 <div class = "map">
   <img src="/public/img/my-map.png" height = 100%> 
 </div>
 
+<!--Display for the form-->
 <div class = "newCommunityData">
     <form action = "/ConstructCommunity" method="POST">
         <label>
             Select an place in the map where you want to place your community.
         </label><br/>
+        <!--Prompting the user for what he/she wants to call the community-->
         <label> What do you want to call your community?</label><br/>
-        <input type="text" name = "NewCommunityName" required><br/>
+        <input type="text" name = "NewCommunityName" maxlength = "24" required><br/>
+        <!--Prompting the user for the description of the community-->
         <label> Enter a description about your community.</label><br/>
-        <input type="text" name = "CommunityDescription" height = "25%"><br/>
-        <!-- <label> Who do you wish to add as Moderators?</label><br/>
-        <input type="text" name = "ModeratorSelections" height = "25%"><br/> -->
+        <input type="text" name = "CommunityDescription" maxlength = "250" required><br/>
+        <!--Button to submit all inputted data for the form-->
         <button type="submit">Create Community</button>
     </form>
 
-    <form action = "/" method = "GET">
+    <!--Go back button that returns to home page-->
+    <form action = "/home" method = "GET">
         <button type="submit">Go Back</button>
     </form>
 </div>

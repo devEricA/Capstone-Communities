@@ -677,6 +677,7 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	//sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = ?  AND Password = '?'`, Username, Password)
 	UserSearch := db.QueryRow(`SELECT Username, Password FROM User WHERE Username = ?`, Username)
 	err = UserSearch.Scan(&CurrentSess.Username, &HashedPassword)
+	//Checking for the existence of the user
 	if err == sql.ErrNoRows{
 		return false
 	}else if err == nil{
@@ -688,7 +689,6 @@ func DBLogin(Username string, Password string, CurrentSess User) bool {
 	}else{
 		panic(err)
 	}
-	//Switching the error and chacking to see whether or not the user exists. 	
 }
 
 //Loads all communities from the database into the community window
@@ -709,10 +709,8 @@ func LoadAllCommunities(){
 		panic(cleanErr)
 	}
 
-	// Variable used to separate Community positions
-
 	//Grabbing all of the communities
-	allCommunitiesQuery := `SELECT Name, Description FROM Communities`
+	allCommunitiesQuery := `SELECT Name, Description FROM Communities ORDER BY Community_ID DESC`
 	allCommunities, Qerr := db.Query(allCommunitiesQuery)
 	if Qerr != nil{
 		panic(Qerr)
@@ -732,6 +730,10 @@ func LoadAllCommunities(){
 		readerr := allCommunities.Scan(&Name, &Description)
 		if readerr != nil{
 			panic(readerr.Error())
+		}
+		//Trims long descriptions to a length that fits inside the window
+		if len(Description) > 100 {
+			Description = Description[0:100] + "..."
 		}
 		ValueName := fmt.Sprintf("value=\"%s\"", Name)
 		ValueDesc := fmt.Sprintf("value=\"%s\"", Description)
@@ -797,8 +799,8 @@ func LoadAllPosts(){
 			panic(readerr.Error())
 		}
 		//Trims long posts to a length that fits inside the window
-		if len(Text) > 125 {
-			Text = Text[0:125] + "..."
+		if len(Text) > 100 {
+			Text = Text[0:100] + "..."
 		}
 		Cerr := db.QueryRow(`SELECT Name FROM Communities WHERE Community_ID = ?`, CommunityID).Scan(&Community)
 		if Cerr != nil{

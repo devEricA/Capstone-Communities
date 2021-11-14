@@ -1,7 +1,15 @@
+<!--
+    Terms of service page.
+    This page is responsible for
+    displaying information about our usage of location data. 
+-->
 {{set . "title" "Terms of Service - Communities"}}
 {{template "header.html" .}}
 {{template "flash.html" .}}
 
+<!--
+    Defining setups for buttons
+-->
 <style>
 button {   
     background-color: #000000;   
@@ -24,7 +32,9 @@ button:hover {
 
 <center><h1> Terms of Service </h1></center>
 
+<!--Container for the form-->
 <div class = "container">
+    <!--Displaying info about our usage-->
     <text>
         Welcome to the Communities application.
     </text></br>
@@ -47,6 +57,7 @@ button:hover {
         By clicking on "I Understand", you consent to us using your location
         for the application's functionality. 
     </text></br>
+    <!--Submission button-->
     <form action="/login" method="GET">
         <button type="submit">I Understand</button>
     </form>

@@ -1,6 +1,16 @@
+<!--
+    Account Recovery Page
+    Page where users go when users forget their password
+    This page is still a WIP
+-->
+
+<!--Title Setup, and Inclusion of default header template-->
 {{set . "title" "Account  - Communities"}}
 {{template "header.html" .}}
 
+<!--
+    Defining setups for inputs, buttons
+-->
 <style>
     input[type=text] {   
           width: 50%;   
@@ -30,18 +40,24 @@
       } 
 </style>
 
+<!--Header display-->
 <center><h1> Recover your Account </h1></center>
 
+<!--Container for prompt box-->
 <div class="container">
+    <!--Prompt for the email-->
     <label>Enter the email address that you used to create your account</label>
+    <!--Form for the Email Entry-->
     <form action = "" method = "POST"></form>
-        <input type="text" name="LoginEmail"/><br/>
+        <input type="text" name="LoginEmail" maxlength = "24" required/><br/>
         <button type="submit">Send Recovery Email</button>
     </form>
 
+    <!--Submit button returning to login after input-->
     <form action="/login" method="GET">
         <button type="submit">Go Back</button>
     </form>
 </div>
 
+<!--Inclusion of Default footer template-->
 {{template "footer.html" .}}
