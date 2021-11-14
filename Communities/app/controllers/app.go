@@ -61,8 +61,8 @@ func (c App) Index() revel.Result {
 	var err error
 
 	//Opening the connection to the database
-	// maria_pwd := os.Getenv("MYSQL_PWD")
-	maria_pwd := "root"
+	maria_pwd := os.Getenv("MYSQL_PWD")
+	// maria_pwd := "root"
 	db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
 
 	//If database fails to connect, display the error mentioning that the database failed to connect
