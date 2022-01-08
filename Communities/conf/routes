@@ -9,9 +9,9 @@ module:testrunner
 GET     /login                                  Auth.Login
 GET     /                                       Startup.Index
 GET     /AccountCreation                        AccountCreation.AccountCreation
-GET     /Profile                                App.Profile
-POST    /UpdateUserName                         App.UpdateUserName
-POST    /UpdatePassword                         App.UpdatePassword
+GET     /Profile                                Profile.Profile
+POST    /UpdateUserName                         Profile.UpdateUserName
+POST    /UpdatePassword                         Profile.UpdatePassword
 GET     /AccRecovery                            Auth.AccRecovery
 GET     /CreateCommunity                        App.CreateCommunity
 GET     /Community/                             App.Community
