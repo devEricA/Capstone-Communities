@@ -6,20 +6,20 @@
 module:testrunner
 # module:jobs
 
-GET     /login                                  App.Login
+GET     /login                                  Auth.Login
 GET     /                                       Startup.Index
 GET     /AccountCreation                        AccountCreation.AccountCreation
 GET     /Profile                                App.Profile
 POST    /UpdateUserName                         App.UpdateUserName
 POST    /UpdatePassword                         App.UpdatePassword
-GET     /AccRecovery                            App.AccRecovery
+GET     /AccRecovery                            Auth.AccRecovery
 GET     /CreateCommunity                        App.CreateCommunity
 GET     /Community/                             App.Community
 GET     /home                                   App.Home
 POST    /home                                   App.Home
 GET     /NewPost                                App.NewPost
 GET     /NewEvent                               App.NewEvent
-POST    /LogValidate                            App.LogValidate   
+POST    /LogValidate                            Auth.LogValidate   
 POST    /CreateAccount                          AccountCreation.CreateAccount
 POST    /ConstructPost                          App.ConstructPost
 POST    /ConstructEvent                         App.ConstructEvent

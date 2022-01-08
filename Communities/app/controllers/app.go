@@ -15,7 +15,6 @@ import (
 	"strconv"
    //"time"
    //"log"
-   "golang.org/x/crypto/bcrypt"
 )
 
 // Used as a way to control renders
@@ -36,37 +35,17 @@ var ActiveUser string				  //Current user that is using the application
 var ActiveCommunity string			  //Current community that the user is looking at
 var ActiveComDescription string 	  //Description of the community that the user is looking at
 var db *sql.DB						  //Database Pointer
-// var logger *log.Logger				  //Logging pointer
 
 const (
 	addr     = "Lubbock, TX"
 	lat, lng = "33.563521", "-101.879336"
 )
 
-//Renders the login page
-func (c App) Login() revel.Result {
-	return c.Render()
-}
-
-//Function that checks whether or not the inputted login credentials are valid
-func (c App) LogValidate(LoginUserName string, LoginPassword string) revel.Result{
-	//If the login is successful, direct to the Home page
-	//Set a flag that the login is successful
-	if(DBLogin(LoginUserName, LoginPassword, CurrentSess)){
-		LoggedIn = true 
-		ActiveUser = LoginUserName
-		return c.Redirect(App.Home, ActiveUser)
-	}
-	//When invalid credentials are inputted, load up an erro message stating that the input is valid. 
-	c.Flash.Error("Invalid Username or Password")
-	return c.Redirect(App.Login)
-}
-
 //Home Page
 func (c App) Home(LoginUserName string) revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	LoginUserName = ActiveUser
 
@@ -89,17 +68,11 @@ func (c App) Home(LoginUserName string) revel.Result{
 	return c.Render(LoginUserName)
 }
 
-
-//Renders account recovery
-func (c App) AccRecovery() revel.Result {
-	return c.Render()
-}
-
 //Renders Profilepage
 func (c App) Profile(CurrentUser string) revel.Result {
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	return c.Render(ActiveUser)
 }
@@ -109,7 +82,7 @@ func (c App) Profile(CurrentUser string) revel.Result {
 func (c App) UpdateUserName(NewUserName string) revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	var err error //General Error
 	var UserNameAlreadyExists int //Checks for whether or not the username exists already
@@ -150,7 +123,7 @@ func (c App) UpdateUserName(NewUserName string) revel.Result{
 func (c App) UpdatePassword(NewPassword string, NewPasswordConfirm string) revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	//If passwords do not match, redirect back to the profile
 	//and display an error message
@@ -182,7 +155,7 @@ func (c App) UpdatePassword(NewPassword string, NewPasswordConfirm string) revel
 func (c App) CreateCommunity() revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	return c.Render()
 }
@@ -192,7 +165,7 @@ func (c App) CreateCommunity() revel.Result{
 func (c App) ConstructCommunity(NewCommunityName string, CommunityDescription string) revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	var err error	// error that returns during the query
 	var communityAlreadyExists int // Checking for the existence of community, don't want duplicates due to confusion
@@ -301,7 +274,7 @@ func (c App) ConstructPost(PostTitle string, PostContent string, CurrentCommunit
 //Renders the Community page
 func (c App) Community(CurrentCommunity string, CurrentCommunityDescription string) revel.Result{
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	CurrentCommunity = ActiveCommunity
 	CurrentCommunityDescription = ActiveComDescription
@@ -435,7 +408,7 @@ func (c App) LoadAssociatedData(CurrentCommunity string, CurrentCommunityDescrip
 //Renders the New Post page
 func (c App) NewPost() revel.Result{{}
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	return c.Render()
 }
@@ -443,7 +416,7 @@ func (c App) NewPost() revel.Result{{}
 //Renders the New Event page
 func (c App) NewEvent() revel.Result{
 	if(!LoggedIn){
-		return c.Redirect(App.Login);
+		return c.Redirect(Auth.Login);
 	}
 	return c.Render()
 }
@@ -542,28 +515,6 @@ func createMap(lat float64, lng float64) {
 	}
 
 	if err := gg.SavePNG("public/img/my-map.png", img); err != nil { //Downloads the image from Open Street Map
-		panic(err)
-	}
-}
-
-//Attempts to login user. QueryRow throws error if no user + pass combo found
-func DBLogin(Username string, Password string, CurrentSess User) bool {
-	var err error //Error to deploy
-	var HashedPassword string
-	//SQL statment to query for the credententials. 
-	//sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = ?  AND Password = '?'`, Username, Password)
-	UserSearch := db.QueryRow(`SELECT Username, Password FROM User WHERE Username = ?`, Username)
-	err = UserSearch.Scan(&CurrentSess.Username, &HashedPassword)
-	//Checking for the existence of the user
-	if err == sql.ErrNoRows{
-		return false
-	}else if err == nil{
-		if CheckHash(Password, HashedPassword){
-			return true;
-		}else{
-			return false;
-		}
-	}else{
 		panic(err)
 	}
 }
@@ -703,16 +654,4 @@ func LoadAllPosts(){
 		panic(err.Error())
 	}
 
-}
-
-//Hashing function for passwords
-func Hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-//Checking for hash matches
-func CheckHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-   
+} 
