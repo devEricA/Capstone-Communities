@@ -14,7 +14,7 @@ Our product solves the need by increasing the connectivity within the local scen
 * [Linux Mint & Ubuntu](https://r00t4bl3.com/post/how-to-install-mariadb-10-3-on-linux-mint-19)
 * [Other Systems](https://mariadb.com/downloads/)
 2. Establish your Database server with user = root and password = root.
-3. Run the SQL script in the root of this repo within your database server. 
+3. Run the SQL script(sqlCode.sql) in the root of this repo within your database server. 
 4. If you haven't already, install Go [here](https://golang.org/doc/install)
 5. If you haven't already, install Revel [by following this tutorial](https://revel.github.io/tutorial/gettingstarted.html)
 6. Input <code>export PATH="$PATH:$GOPATH/bin"</code> into a unix terminal
