@@ -43,67 +43,9 @@ const (
 	lat, lng = "33.563521", "-101.879336"
 )
 
-// performance logging helpers
-// func startPerfMeasure() time.Time {
-//    return time.Now()
-// }
-
-// func finishPerfMeasure(start time.Time, name string) {
-//    duration := time.Since(start)
-//    logger.Println(name + " execution time: " + fmt.Sprintf("%f", duration.Milliseconds()))
-// }
-
-//By default, Index is the first page that loads in Revel
-//We are using this to open up our database and make queries. 
-func (c App) Index() revel.Result {
-   	
-	//Error that will display if the database connection fails
-	var err error
-
-	//Opening the connection to the database
-	// maria_pwd := os.Getenv("MYSQL_PWD")
-	maria_pwd := "root"
-	db, err = sql.Open("mysql", "root:"+maria_pwd+"@tcp(127.0.0.1:3306)/serverstorage")
-
-	//If database fails to connect, display the error mentioning that the database failed to connect
-	if err != nil {
-		panic(err.Error())
-		c.Flash.Error("Database failed to load")
-	}
-
-	//Load the communities nearby
-	LoadAllCommunities()
-	LoadAllPosts()
-
-	//Ping the database in order to ensure that it is connected
-	db.Ping()
-
-	//After connecting to the database, redirect to the Login page
-	return c.Redirect(App.Login)
-}
-
 //Renders the login page
 func (c App) Login() revel.Result {
 	return c.Render()
-}
-
-
-//Handles Account Creation
-//Called whenever a "CreateAccount" form is submitted 
-func (c App) CreateAccount(NewUserName string, NewPassword string, NewEmail string, NewPasswordConfirmation string) revel.Result{
-	//If passwords do not match, redirect to the Account Creation page
-	if(NewPassword != NewPasswordConfirmation){
-		c.Flash.Error("Passwords do not match.")
-		return c.Redirect(App.AccountCreation)
-	}else if(DBCreateAccount(NewUserName, NewPassword, NewEmail, CurrentSess)){
-		// If the creation of the account is successful, redirect to the login page.
-		c.Flash.Success("Account Created!")
-		return c.Redirect(App.TermsOfService)
-	}
-	//If an error occured when creating the account, return to the account creation page. 
-	c.Flash.Error("Error occured when creating the account, email or username already exists.")
-	// defer db.Close()
-	return c.Redirect(App.AccountCreation)
 }
 
 //Function that checks whether or not the inputted login credentials are valid
@@ -146,11 +88,7 @@ func (c App) Home(LoginUserName string) revel.Result{
 	//TODO: Render user communities, latest posts, and communities on the map
 	return c.Render(LoginUserName)
 }
- 
-//Renders the account creation page
-func (c App) AccountCreation() revel.Result {
-	return c.Render()
-}
+
 
 //Renders account recovery
 func (c App) AccRecovery() revel.Result {
@@ -568,11 +506,6 @@ func (c App) ConstructEvent(EventTitle string, EventDay string, EventTime string
 
 }
 
-//Renders the terms of service page
-func (c App) TermsOfService() revel.Result{
-	return c.Render()	
-}
-
 //Creates the map for the home page
 func createMap(lat float64, lng float64) {
 	ctx := sm.NewContext() //Creates a new map 'context' 
@@ -611,62 +544,6 @@ func createMap(lat float64, lng float64) {
 	if err := gg.SavePNG("public/img/my-map.png", img); err != nil { //Downloads the image from Open Street Map
 		panic(err)
 	}
-}
-
-//Creates the account from the submission data of AccountCreation.html
-func DBCreateAccount(Username string, Password string, Email string, CurrentSess User) bool {
-	var err error //Error to deploy
-
-	//Checking for an already existing email
-	//sqlStatement := db.Prepare(`SELECT COUNT(Email) FROM User WHERE Email = '?'`) 
-	var AccountExist int
-	err = db.QueryRow(`SELECT COUNT(Email) FROM User WHERE Email = ?`, Email).Scan(&AccountExist)
-
-	//If an error occured during the check, Panic
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//Returning false if an email already exists, 
-	//Thus preventing a creation of an account 
-	if AccountExist != 0 {
-		return false
-	}
-
-	//Checking for an already existing username
-	//UsersqlStatement := fmt.Sprintf(`SELECT COUNT(Username) FROM User WHERE Username = '%s'`, Username) 
-	var UserExist int
-	err = db.QueryRow(`SELECT COUNT(Username) FROM User WHERE Username = ?`, Username).Scan(&UserExist)
-
-	//If an error occured during the check, Panic
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//Returning false if the username already exists, 
-	//Thus preventing a creation of an account 
-	if UserExist != 0 {
-		return false
-	}
-
-	//Hashing the password
-	HashedPassword, Herr := Hash(Password)
-	if Herr != nil{
-		panic(Herr.Error())
-	}
-
-	//Loading the user into the user database table
-	// saveUser := fmt.Sprintf(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES ('%s', '%s', '%s', '%s', 'None')`, Username, Username, Password, Email)
-	_, Loaderr := db.Exec(`INSERT INTO User(Username, Display_Name, Password, Email, Bio) VALUES (?, ?, ?, ?, 'None')`, Username, Username, HashedPassword, Email)
-
-	//Error occured during the load, panic
-	if Loaderr != nil {
-		panic(Loaderr.Error())
-	}
-
-	//Returning true to detail an account creation success
-	return true
-
 }
 
 //Attempts to login user. QueryRow throws error if no user + pass combo found

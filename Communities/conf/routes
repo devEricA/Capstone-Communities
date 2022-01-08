@@ -7,8 +7,8 @@ module:testrunner
 # module:jobs
 
 GET     /login                                  App.Login
-GET     /                                       App.Index
-GET     /AccountCreation                        App.AccountCreation
+GET     /                                       Startup.Index
+GET     /AccountCreation                        AccountCreation.AccountCreation
 GET     /Profile                                App.Profile
 POST    /UpdateUserName                         App.UpdateUserName
 POST    /UpdatePassword                         App.UpdatePassword
@@ -20,11 +20,11 @@ POST    /home                                   App.Home
 GET     /NewPost                                App.NewPost
 GET     /NewEvent                               App.NewEvent
 POST    /LogValidate                            App.LogValidate   
-POST    /CreateAccount                          App.CreateAccount
+POST    /CreateAccount                          AccountCreation.CreateAccount
 POST    /ConstructPost                          App.ConstructPost
-POST    /ConstructEvent                            App.ConstructEvent
+POST    /ConstructEvent                         App.ConstructEvent
 POST    /ConstructCommunity                     App.ConstructCommunity
-GET     /TermsOfService                         App.TermsOfService
+GET     /TermsOfService                         AccountCreation.TermsOfService
 POST    /LoadAssociatedData                     App.LoadAssociatedData
 
 # Ignore favicon requests
