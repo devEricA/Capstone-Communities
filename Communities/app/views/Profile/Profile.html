@@ -1,0 +1,83 @@
+<!--
+    Profile Page
+    This page is responsible for
+    handling updates to the user's profile
+-->
+{{set . "title" "Profile - Communities"}}
+{{template "header.html" .}}
+{{template "flash.html" .}}
+
+<!--
+    Defining setups for inputs, buttons, containers
+    and forms.
+-->
+<style>
+    .UsernameAndPassword{
+        text-align: left;
+        height: 500 px;
+        padding-bottom: 10 px;
+    }
+    .userCommunities{
+        text-align: left;
+        height: 300 px;
+        padding-bottom: 10 px;
+    }
+    .userPosts{
+        text-align: left;
+        height: 200 px;
+        padding-bottom: 10 px;
+    }
+    input[type=text], input[type=password] {   
+          width: 50%;   
+          margin: 8px 0;  
+          padding: 12px 20px;   
+          display: inline-block;   
+          border: 2px solid rgb(0, 0, 0);   
+          box-sizing: border-box;   
+    }
+    .container {   
+          padding: 25px; 
+          border: 3px solid #f1f1f1;   
+      } 
+    button {   
+         background-color: #000000;   
+         width: 15%;  
+          color: rgb(184, 182, 179);   
+          padding: 15px;   
+          margin: 10px 0px;   
+          border: none;   
+          cursor: pointer;   
+    }
+    button:hover {   
+          opacity: 0.7;   
+    }        
+</style>
+
+<center><h1> My Profile </h1></center> 
+
+<!--Container for the forms for updating data-->
+<div class = "container">
+    <div class = "UsernameAndPassword">
+        <!--Updates the Username-->
+        Current Username: {{.LoginUserName}} 
+        <form action="\UpdateUserName" method = "POST">
+            <input type="text" name="NewUserName" maxlength="24" placeholder="Change Username"/><br/>
+            <button type="submit">Update Username</button>
+        </form>
+
+        <!--Updates the password-->
+        Current Password: {{.LoginPassword}} 
+        <form action="\UpdatePassword" method = "POST">
+            <input type="password" name="NewPassword" placeholder = "Change Password"><br/>
+            <input type="password" name="NewPasswordConfirm" placeholder = "Confirm Password"><br/>
+            <button type="submit">Update Password</button>
+        </form>
+    </div>
+
+    <!--Goes back to the home page-->
+    <form action="/home" method="GET">
+        <button type="submit">Go Back</button>
+    </form>
+</div>
+
+<!-- {{template "footer.html" .}} -->

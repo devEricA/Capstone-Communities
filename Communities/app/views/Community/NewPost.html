@@ -1,0 +1,60 @@
+<!--
+    This page is responsible for 
+    handling the creation of brand new posts
+-->
+{{set . "title" "New Post  - Communities"}}
+{{template "header.html" .}}
+{{template "flash.html" .}}
+
+<!--
+    Defining setups for inputs, buttons
+-->
+<style>
+input[type=text]{   
+        width: 50%;   
+        margin: 8px 0;  
+        padding: 12px 20px;   
+        display: inline-block;   
+        border: 2px solid rgb(0, 0, 0);   
+        box-sizing: border-box;   
+}
+button {   
+        background-color: #000000;   
+        width: 25%;  
+        color: rgb(184, 182, 179);   
+        padding: 15px;   
+        margin: 10px 0px;   
+        border: none;   
+        cursor: pointer;   
+    }  
+button:hover {   
+        opacity: 0.7;   
+    } 
+.container {   
+        padding: 25px; 
+        border: 3px solid #f1f1f1;   
+    } 
+</style>
+
+<center><h1> New Post </h1></center> 
+
+<!--Container for the form responsible for creating the post-->
+<div class = "container">
+    <form action="/ConstructPost" method = "POST">
+        <!--Prompting for the title of the post-->
+        <label>What do you want to title your post?</label><br>
+        <input type="text" name="PostTitle" maxlength="50" required/><br>
+        <!--Prompting for the content of the post-->
+        <label>What do you want to talk about in this post?</label><br>
+        <input type="text" name="PostContent" maxlength="500"/><br>
+        <!--Submission of the post creation-->
+        <button type="submit">Create Post</button>   
+    </form>
+
+    <!--Cancellation button-->
+    <form action="/Community" method="GET">
+        <button type="submit">Cancel</button>
+    </form>
+</div>
+
+{{template "footer.html" .}}

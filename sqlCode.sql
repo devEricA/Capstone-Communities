@@ -70,5 +70,5 @@ CREATE TABLE Events (
 ) ENGINE = InnoDB;
 
 ALTER TABLE Events MODIFY COLUMN Date VARCHAR(25) NOT NULL;
-ALTER TABLE Communities ADD Longitude Float(10,10) SIGNED AFTER City;
-ALTER TABLE Communities ADD Latitude Float(10,10) SIGNED AFTER Longitude;
+ALTER TABLE Communities ADD Longitude VARCHAR(20) AFTER City;
+ALTER TABLE Communities ADD Latitude VARCHAR(20) AFTER Longitude;
