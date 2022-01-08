@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Used as a way to control renders
+// Defining the controller used in this file
 type Auth struct {
 	*revel.Controller
 }

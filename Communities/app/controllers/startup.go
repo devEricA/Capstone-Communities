@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Used as a way to control renders
+// Defining the controller used in this file
 type Startup struct {
 	*revel.Controller
 }

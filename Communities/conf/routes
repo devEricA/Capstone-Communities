@@ -13,19 +13,19 @@ GET     /Profile                                Profile.Profile
 POST    /UpdateUserName                         Profile.UpdateUserName
 POST    /UpdatePassword                         Profile.UpdatePassword
 GET     /AccRecovery                            Auth.AccRecovery
-GET     /CreateCommunity                        App.CreateCommunity
-GET     /Community/                             App.Community
+GET     /CreateCommunity                        Community.CreateCommunity
+GET     /Community/                             Community.Community
 GET     /home                                   App.Home
 POST    /home                                   App.Home
-GET     /NewPost                                App.NewPost
-GET     /NewEvent                               App.NewEvent
+GET     /NewPost                                Community.NewPost
+GET     /NewEvent                               Community.NewEvent
 POST    /LogValidate                            Auth.LogValidate   
 POST    /CreateAccount                          AccountCreation.CreateAccount
-POST    /ConstructPost                          App.ConstructPost
-POST    /ConstructEvent                         App.ConstructEvent
-POST    /ConstructCommunity                     App.ConstructCommunity
+POST    /ConstructPost                          Community.ConstructPost
+POST    /ConstructEvent                         Community.ConstructEvent
+POST    /ConstructCommunity                     Community.ConstructCommunity
 GET     /TermsOfService                         AccountCreation.TermsOfService
-POST    /LoadAssociatedData                     App.LoadAssociatedData
+POST    /LoadAssociatedData                     Community.LoadAssociatedData
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
