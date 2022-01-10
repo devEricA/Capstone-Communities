@@ -8,14 +8,13 @@ package controllers
 import (
 	"github.com/revel/revel"
 	"database/sql"
-	"github.com/revel/modules/orm/gorp/app/controllers"
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Defining the controller used in this file
 type Auth struct {
-	gorpController.Controller
+	*revel.Controller
 }
 
 //Renders the login page
