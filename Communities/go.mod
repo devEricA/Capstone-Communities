@@ -13,16 +13,23 @@ require (
 )
 
 require (
+	github.com/Masterminds/squirrel v1.3.0 // indirect
 	github.com/Wessie/appdirs v0.0.0-20141031215813-6573e894f8e2 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/flopp/go-coordsparser v0.0.0-20201115094714-8baaeb7062d5 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/garyburd/redigo v1.6.2 // indirect
+	github.com/go-gorp/gorp v2.2.0+incompatible // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/inconshreveable/log15 v0.0.0-20200109203555-b30bc20e4fd1 // indirect
+	github.com/jinzhu/gorm v1.9.12 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/lib/pq v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-sqlite3 v2.0.1+incompatible // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/revel/config v0.21.0 // indirect
 	github.com/revel/log15 v2.11.20+incompatible // indirect

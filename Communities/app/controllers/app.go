@@ -32,6 +32,10 @@ type User struct {
 	Bio          string
 }
 
+// map[string]interface{}
+// ActiveUserMap := map[string]*User{}{"user":&User{}}
+// c.Params.Bind(ActiveUserMap, "ids")
+
 // Global Variables
 var CurrentSess User                  //User info
 var LoggedIn bool                     //Whether or not the user is logged in
@@ -46,12 +50,12 @@ const (
 )
 
 //Home Page
-func (c App) Home(LoginUserName string) revel.Result{
+func (c App) Home() revel.Result{
 	//If an attempt is made to access the page without being logged in, remain in Login page
 	if(!LoggedIn){
 		return c.Redirect(Auth.Login);
 	}
-	LoginUserName = ActiveUser
+	// LoginUserName = ActiveUser
 
 	LatValue, Laerr := strconv.ParseFloat(lat,64)
 	if Laerr != nil{
@@ -69,7 +73,7 @@ func (c App) Home(LoginUserName string) revel.Result{
 	LoadAllPosts()
 
 	//TODO: Render user communities, latest posts, and communities on the map
-	return c.Render(LoginUserName)
+	return c.Render()
 }
 
 //Creates the map for the home page

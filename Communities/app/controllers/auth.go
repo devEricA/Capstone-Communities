@@ -8,18 +8,61 @@ package controllers
 import (
 	"github.com/revel/revel"
 	"database/sql"
+	"github.com/revel/modules/orm/gorp/app/controllers"
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Defining the controller used in this file
 type Auth struct {
-	*revel.Controller
+	gorpController.Controller
 }
 
 //Renders the login page
 func (c Auth) Login() revel.Result {
 	return c.Render()
+}
+
+// Grabs user data
+// Taken from the Hotels example of Revel, slightly modified to work with this instance
+func (c Auth) getUser(username string) (user *models.User) {
+	user = &models.User{}
+	_,  err := c.Session.GetInto("fulluser", user, false)
+	if user.Username == username {
+		return user
+	}
+	
+	//Grabbing the user
+	UserSearch := db.QueryRow(`SELECT Username, Password FROM User WHERE Username = ?`, Username)
+	err = c.Txn.SelectOne(user, UserSearch)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			//c.Txn.Select(user, c.Db.SqlStatementBuilder.Select("*").From("User").Limit(1))
+			count := db.QueryRow(`SELECT COUNT(*) FROM User `) 
+			//count, _ := c.Txn.SelectInt(c.Db.SqlStatementBuilder.Select("count(*)").From("User"))
+			c.Log.Error("Failed to find user", "user", username, "error",err, "count", count)
+		}
+		return nil
+	}
+	c.Session["fulluser"] = user
+	return
+}
+
+//Attempts to login user. QueryRow throws error if no user + pass combo found
+func (c Auth) DBLogin(Username string, Password string, CurrentSess User) bool {
+	user := c.getUser(Username)
+	if err == sql.ErrNoRows{
+		return false
+	}else if err == nil{
+		if CheckHash(Password, HashedPassword){
+			c.Session["user"] = username
+			return true;
+		}else{
+			return false;
+		}
+	}else{
+		panic(err)
+	}
 }
 
 //Function that checks whether or not the inputted login credentials are valid
@@ -28,34 +71,11 @@ func (c Auth) LogValidate(LoginUserName string, LoginPassword string) revel.Resu
 	//Set a flag that the login is successful
 	if(DBLogin(LoginUserName, LoginPassword, CurrentSess)){
 		LoggedIn = true 
-		ActiveUser = LoginUserName
-		return c.Redirect(App.Home, ActiveUser)
+		return c.Redirect(App.Home)
 	}
 	//When invalid credentials are inputted, load up an erro message stating that the input is valid. 
 	c.Flash.Error("Invalid Username or Password")
 	return c.Redirect(Auth.Login)
-}
-
-//Attempts to login user. QueryRow throws error if no user + pass combo found
-func DBLogin(Username string, Password string, CurrentSess User) bool {
-	var err error //Error to deploy
-	var HashedPassword string
-	//SQL statment to query for the credententials. 
-	//sqlStatement := fmt.Sprintf(`SELECT Username, Display_Name, Bio FROM User WHERE Username = ?  AND Password = '?'`, Username, Password)
-	UserSearch := db.QueryRow(`SELECT Username, Password FROM User WHERE Username = ?`, Username)
-	err = UserSearch.Scan(&CurrentSess.Username, &HashedPassword)
-	//Checking for the existence of the user
-	if err == sql.ErrNoRows{
-		return false
-	}else if err == nil{
-		if CheckHash(Password, HashedPassword){
-			return true;
-		}else{
-			return false;
-		}
-	}else{
-		panic(err)
-	}
 }
 
 //Checking for hash matches

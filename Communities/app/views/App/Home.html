@@ -89,7 +89,7 @@
   <!--Left hand side is responsible for displaying all of the latest posts from the community-->
   <div class="left-hand-side">
         <div class = "WindowHead">
-         <i><b> Latest news from {{.LoginUserName}}'s communities</b></i>
+         <i><b> Latest news from {{(session "fulluser" .).Username}}'s communities</b></i>
         </div>
         <div class = "postList">
          <!--Template responsible for displaying the latest posts-->
@@ -104,7 +104,7 @@
   <!--Right hand side is responsible for displaying all of the communities, along with profile information-->
   <div class = "right-hand-side">
         <div class="profileWindow">
-                <b>Hello <i>{{.LoginUserName}}</i></b><div class = "break"></div>
+                <b>Hello <i>{{(session "fulluser" .).Username}}</i></b><div class = "break"></div>
                 <a href = "/Profile"><button>My Profile</button></a>
                 <a href = "/CreateCommunity"><button>New Community</button></a>
 
