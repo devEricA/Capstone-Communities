@@ -12,7 +12,7 @@ Our product solves the need by increasing the connectivity within the local scen
 # Instructions for Deployment
 _These instructions are intended for Linux & Mac Users._
 
-_Windows users should install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install) and conduct the installation of this application within that system._
+_Windows users should install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install) and conduct the deployment of this application within that system._
 1. Install MariaDB: 
 * [Linux Mint & Ubuntu](https://r00t4bl3.com/post/how-to-install-mariadb-10-3-on-linux-mint-19)
 * [Other Systems](https://mariadb.com/downloads/)
