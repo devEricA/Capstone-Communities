@@ -23,7 +23,7 @@ We may revisit this project if new info comes to light on how to conduct authent
 # Instructions for Deployment
 _These instructions are intended for Linux & Mac Users. It should be done within the terminal_
 
-_Windows users should install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install) and conduct the deployment of this application within the terminal that system._
+_Windows users should install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install) and conduct the deployment of this application within the terminal of that system._
 1. Install MariaDB: 
 * [Linux Mint & Ubuntu](https://r00t4bl3.com/post/how-to-install-mariadb-10-3-on-linux-mint-19)
 * [Other Systems](https://mariadb.com/downloads/)
